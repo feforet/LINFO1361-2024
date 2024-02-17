@@ -1,3 +1,4 @@
+#!/bin/python3
 """
 Name of the author(s):
 - Charles Lohest <charles.lohest@uclouvain.be>
