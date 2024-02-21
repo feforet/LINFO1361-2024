@@ -51,12 +51,12 @@ class State:
 
 def read_instance_file(filepath):
     with open(filepath) as fd:
-        lines = fd.read().splitlines()
-    shape_x, shape_y = tuple(map(int, lines[0].split()))
-    initial_grid = [tuple(row) for row in lines[1:1 + shape_x]]
-    initial_fruit_count = sum(row.count('F') for row in initial_grid)
+        lines = fd.read().splitlines() # toutes les lignes du file (row de la grid)
+    shape_x, shape_y = tuple(map(int, lines[0].split())) # on regarde la première ligne pour trouver les dims de la grid
+    initial_grid = [tuple(row) for row in lines[1:1 + shape_x]] #on itère sur la grip (on commence à la ligne 1 et pas 0 puisque ligne 0 = dims jusqu'au bout de la grid) : on a une liste de tuples qui représentent une ligne de la grid
+    initial_fruit_count = sum(row.count('F') for row in initial_grid) #compte le nombre de fruit dans la grid
 
-    return (shape_x, shape_y), initial_grid, initial_fruit_count
+    return (shape_x, shape_y), initial_grid, initial_fruit_count #les dims, toutes les lignes de la grid, le nombre de fruits
 
 
 if __name__ == "__main__":
