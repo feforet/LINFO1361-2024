@@ -14,20 +14,72 @@ from search import *
 dico = {}
 class Pacman(Problem):
 
+    class Action:
+        def __init__(self, direction, number_of_moves):
+            self.direction = direction
+            self.number_of_moves = number_of_moves
 
 
     def actions(self, state):
         # Define the possible actions for a given state
-        pass
+        actions = []
+        for i in range(state.shape[0]):
+            for j in range(state.shape[1]):
+                if state.grid[i][j] == "P":
+                    pos = (i, j)
+
+        x, y = pos
+        for k in range(1, state.shape[0]):
+            if x+k >= state.shape[0] or state.grid[x+k][y] == "#":
+                break
+            actions.append(self.Action("S", k))
+        for k in range(1, state.shape[0]):
+            if x-k < 0 or state.grid[x-k][y] == "#":
+                break
+            actions.append(self.Action("N", k))
+        for k in range(1, state.shape[1]):
+            if y+k >= state.shape[1] or state.grid[x][y+k] == "#":
+                break
+            actions.append(self.Action("E", k))
+        for k in range(1, state.shape[1]):
+            if y-k < 0 or state.grid[x][y-k] == "#":
+                break
+            actions.append(self.Action("W", k))
+
+        return actions
 
 
     def result(self, state, action):
         # Apply the action to the state and return the new state
-        pass
+        for i in range(state.shape[0]):
+            for j in range(state.shape[1]):
+                if state.grid[i][j] == "P":
+                    pos = (i, j)
+
+        x, y = pos
+        new_grid = [list(row) for row in state.grid]
+        new_answer = state.answer
+        new_grid[x][y] = "."
+
+        if action.direction == "S":
+            new_pos = (x+action.number_of_moves, y)
+        if action.direction == "N":
+            new_pos = (x-action.number_of_moves, y)
+        if action.direction == "E":
+            new_pos = (x, y+action.number_of_moves)
+        if action.direction == "W":
+            new_pos = (x, y-action.number_of_moves)
+        
+        if new_grid[new_pos[0]][new_pos[1]] == "F":
+            new_answer -= 1
+        new_grid[new_pos[0]][new_pos[1]] = "P"
+        
+        new_state = State(state.shape, tuple([tuple(row) for row in new_grid]), new_answer, "Move " + action.direction + " " + str(action.number_of_moves))
+        return new_state
         
     def goal_test(self, state):
     	#check for goal state
-    	pass
+        return state.answer == 0
 
 
 

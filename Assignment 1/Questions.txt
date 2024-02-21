@@ -1,0 +1,4 @@
+A quel point peut-on modifier le template? 
+    - ajouter des variables d'instance dans les classes de pacman.py (position du P dans la grid)
+    - créer des classes dans pacman.py (classe Action)
+
