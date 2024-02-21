@@ -31,6 +31,7 @@ class Problem:
         state. The result would typically be a list, but if there are
         many actions, consider yielding them one at a time in an
         iterator, rather than building them all at once."""
+        #créer une liste vide et voir où pacman peut aller dans la grid pour ses futures actions
         raise NotImplementedError
 
     def result(self, state, action):
@@ -206,7 +207,7 @@ def depth_first_tree_search(problem):
     Repeats infinitely in case of loops.
     """
 
-    frontier = [Node(problem.initial)]  # Stack
+    frontier = [Node(problem.initial)]  # Stack = liste de noeuds du problème initial
 
     explored_nodes = 0
     while frontier:
