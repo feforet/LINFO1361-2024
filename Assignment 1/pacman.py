@@ -6,6 +6,7 @@ Name of the author(s):
 import time
 import sys
 from search import *
+import signal
 
 
 #################
@@ -114,6 +115,10 @@ def read_instance_file(filepath):
     return (shape_x, shape_y), initial_grid, initial_fruit_count #les dims, toutes les lignes de la grid, le nombre de fruits
 
 
+def timeout_handler(signum, frame):
+    raise Exception("timeout")
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(f"Usage: ./Pacman.py <path_to_instance_file>")
@@ -125,14 +130,24 @@ if __name__ == "__main__":
             init_state = State(shape, tuple(initial_grid), initial_fruit_count, "Init")
             problem = Pacman(init_state)
 
-            for search_type in [breadth_first_tree_search, breadth_first_graph_search]:#, depth_first_tree_search, depth_first_graph_search]:
+            for search_type, search_name in [(breadth_first_tree_search, 'bt'), (breadth_first_graph_search, "bg"), (depth_first_tree_search, "dt"), (depth_first_graph_search, "dg")]:
                 # pour les depth_search, on a un problème de stack overflow, il faut trouver comment limiter le temps d'execution de la fonction a 60sec
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(60)
                 start_timer = time.perf_counter()
-                node, explored_nodes, remaining_nodes_queue = search_type(problem)
-                end_timer = time.perf_counter()
-
+                try:
+                    node, explored_nodes, remaining_nodes_queue = search_type(problem)
+                    finished = True
+                except Exception as e:
+                    finished = False
+                finally:
+                    end_timer = time.perf_counter()
+                    signal.alarm(0)
                 timer = end_timer - start_timer
-                print(f"{path[10:]}\t| {timer:.10f}\t| {explored_nodes:10}\t| {remaining_nodes_queue:10}")
+                if finished:
+                    print(f"{path[10: ]} | {search_name}\t| {timer:.10f}\t| {explored_nodes:10}\t| {remaining_nodes_queue:10}")
+                else:
+                    print(f"{path[10: ]} | {search_name}\t| TIMEOUT\t| {timer:.10f}")
 
 
     else:
