@@ -69,8 +69,12 @@ class Pacman(Problem):
             new_answer -= 1
 
         new_grid[new_pos[0]][new_pos[1]] = "P"
+
+        new_move = f"Move to ({new_pos[0]}, {new_pos[1]})"
+        if new_answer == 0:
+            new_move += " Goal State"
         
-        return State(state.shape, tuple([tuple(row) for row in new_grid]), new_answer, "Move " + action.direction + " " + str(action.number_of_moves), new_pos)
+        return State(state.shape, tuple([tuple(row) for row in new_grid]), new_answer, new_move, new_pos)
         
     def goal_test(self, state):
     	#check for goal state
