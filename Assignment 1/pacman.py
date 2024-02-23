@@ -26,25 +26,26 @@ class Pacman(Problem):
         actions = []
         x, y = state.pos
 
+        # Looks in each direction for each possible number of tiles (up to the edge of the grid or a wall)
+        for k in range(1, state.shape[1]):
+            if y-k < 0 or state.grid[x][y-k] == "#":
+                break
+            actions.append(self.Action("W", k))
+
         for k in range(1, state.shape[0]):
             if x+k >= state.shape[0] or state.grid[x+k][y] == "#":
                 break
             actions.append(self.Action("S", k))
-
-        for k in range(1, state.shape[0]):
-            if x-k < 0 or state.grid[x-k][y] == "#":
-                break
-            actions.append(self.Action("N", k))
 
         for k in range(1, state.shape[1]):
             if y+k >= state.shape[1] or state.grid[x][y+k] == "#":
                 break
             actions.append(self.Action("E", k))
 
-        for k in range(1, state.shape[1]):
-            if y-k < 0 or state.grid[x][y-k] == "#":
+        for k in range(1, state.shape[0]):
+            if x-k < 0 or state.grid[x-k][y] == "#":
                 break
-            actions.append(self.Action("W", k))
+            actions.append(self.Action("N", k))
 
         return tuple(actions)
 
@@ -56,6 +57,7 @@ class Pacman(Problem):
         new_answer = state.answer
         new_grid[x][y] = "."
 
+        # calculate the new position
         if action.direction == "S":
             new_pos = (x+action.number_of_moves, y)
         if action.direction == "N":
@@ -65,9 +67,9 @@ class Pacman(Problem):
         if action.direction == "W":
             new_pos = (x, y-action.number_of_moves)
         
+        # check if a fruit is eaten and update the position of the pacman
         if new_grid[new_pos[0]][new_pos[1]] == "F":
             new_answer -= 1
-
         new_grid[new_pos[0]][new_pos[1]] = "P"
 
         new_move = f"Move to ({new_pos[0]}, {new_pos[1]})"
@@ -77,7 +79,7 @@ class Pacman(Problem):
         return State(state.shape, tuple([tuple(row) for row in new_grid]), new_answer, new_move, new_pos)
         
     def goal_test(self, state):
-    	#check for goal state
+    	# check if there is no more fruit
         return state.answer == 0
 
 
@@ -93,6 +95,7 @@ class State:
         self.grid = grid
         self.move = move
         self.pos=pos
+        # if the position of the pacman is not given, we look for it
         if self.pos is None:
             for i in range(self.shape[0]):
                 for j in range(self.shape[1]):
@@ -108,6 +111,12 @@ class State:
             s += "".join(line) + "\n"
         return s
 
+    # we need to define the __eq__ and __hash__ functions to use the state as a key in a dictionary
+    def __eq__(self, other):
+        return self.grid == other.grid
+    def __hash__(self):
+        return hash(str(self.grid))
+
 
 def read_instance_file(filepath):
     with open(filepath) as fd:
@@ -120,38 +129,45 @@ def read_instance_file(filepath):
 
 
 def timeout_handler(signum, frame):
-    raise Exception("timeout")
+    raise TimeoutError("Timeout")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(f"Usage: ./Pacman.py <path_to_instance_file>")
     filepath = sys.argv[1]
+
+    # Only usefull to compare performance of the search algorithms
     if filepath == "test":
+        print("Instance | Search | Time\t| Explored  | Remaining")
         for i in range(1, 11):
+            print("-"*55)
             path = f"Instances/i{i:02}"
             shape, initial_grid, initial_fruit_count = read_instance_file(path)
             init_state = State(shape, tuple(initial_grid), initial_fruit_count, "Init")
             problem = Pacman(init_state)
 
-            for search_type, search_name in [(breadth_first_tree_search, 'bt'), (breadth_first_graph_search, "bg"), (depth_first_tree_search, "dt"), (depth_first_graph_search, "dg")]:
-                # pour les depth_search, on a un problème de stack overflow, il faut trouver comment limiter le temps d'execution de la fonction a 60sec
+            for search_func, search_name in [(breadth_first_tree_search, 'bt'), (breadth_first_graph_search, "bg"), (depth_first_tree_search, "dt"), (depth_first_graph_search, "dg")]:
+                # prevent infinite loops in tree searches
                 signal.signal(signal.SIGALRM, timeout_handler)
                 signal.alarm(60)
+                end_timer = 0.0
                 start_timer = time.perf_counter()
+
                 try:
-                    node, explored_nodes, remaining_nodes_queue = search_type(problem)
+                    node, explored_nodes, remaining_nodes_queue = search_func(problem)
+                    end_timer = time.perf_counter()
                     finished = True
-                except Exception as e:
+                except TimeoutError as e:
                     finished = False
                 finally:
-                    end_timer = time.perf_counter()
                     signal.alarm(0)
-                timer = end_timer - start_timer
+                
                 if finished:
-                    print(f"{path[10: ]} | {search_name}\t| {timer:.10f}\t| {explored_nodes:10}\t| {remaining_nodes_queue:10}")
+                    timer = end_timer - start_timer
+                    print(f"{path[10: ]}\t | {search_name}\t  | {timer:.5f}\t| {explored_nodes}\t    | {remaining_nodes_queue}")
                 else:
-                    print(f"{path[10: ]} | {search_name}\t| TIMEOUT\t| {timer:.10f}")
+                    print(f"{path[10: ]}\t | {search_name}\t  | TIMEOUT")
 
 
     else:

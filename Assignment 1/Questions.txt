@@ -1,9 +1,0 @@
-A quel point peut-on modifier le template? 
-    - ajouter des variables d'instance dans les classes de pacman.py (position du P dans la grid)
-    - créer des classes dans pacman.py (classe Action)
-
-Dans le tableau des résultats, si la résolution prends plus d'1 min, 
-est-ce qu'on doit quand même reporter le nombre de noeuds explorés et le nombre de noeuds dans la queue?
-    - Si on doit encoder régulièrement des résultats intermédiaires, cela va faire baisser la vitesse de résolution
-
-Quel doit être le format de la ligne "move" dans la solution?
