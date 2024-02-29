@@ -171,9 +171,9 @@ if __name__ == "__main__":
 
 
     else:
-        shape, initial_grid, initial_fruit_count = read_instance_file(filepath) #On initialise les variables grâce à la lecture du file
-        init_state = State(shape, tuple(initial_grid), initial_fruit_count, "Init") #on met en tuple pour que ce soit immuable, on crée le initial state
-        problem = Pacman(init_state) #On définit le problème par la classe Pacman
+        shape, initial_grid, initial_fruit_count = read_instance_file(filepath)
+        init_state = State(shape, tuple(initial_grid), initial_fruit_count, "Init") 
+        problem = Pacman(init_state)
 
         # Example of search
         start_timer = time.perf_counter()
