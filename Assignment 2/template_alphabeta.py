@@ -45,7 +45,7 @@ class AlphaBetaAgent(Agent):
         Returns:
             bool: True if the search should be cut off, False otherwise.
         """
-        ...
+        return depth >= self.max_depth or state.utility != 0
     
     def eval(self, state):
         """Evaluates the given state and returns a score from the perspective of the agent's player.
@@ -56,7 +56,14 @@ class AlphaBetaAgent(Agent):
         Returns:
             float: The evaluated score of the state.
         """
-        ...
+        min_me = 4
+        min_opponent = 4
+        me = self.player
+        opponent = 1 - self.player
+        for i in range(4):
+            min_me = min(min_me, len(state.board[i][me]))
+            min_opponent = min(min_opponent, len(state.board[i][opponent]))
+        return float(min_me - min_opponent)
 
     def alpha_beta_search(self, state):
         """Implements the alpha-beta pruning algorithm to find the best action.
