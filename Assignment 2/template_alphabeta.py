@@ -56,9 +56,9 @@ class AlphaBetaAgent(Agent):
         Returns:
             float: The evaluated score of the state.
         """
-        min_me = 4
+        min_me = 4 # 4 boards
         min_opponent = 4
-        me = self.player
+        me = self.player # 1 or 0
         opponent = 1 - self.player
         for i in range(4):
             min_me = min(min_me, len(state.board[i][me]))
@@ -74,6 +74,8 @@ class AlphaBetaAgent(Agent):
         Returns:
             ShobuAction: The best action as determined by the alpha-beta algorithm.
         """
+        if(self.player):
+            val = -float("inf")
         _, action = self.max_value(state, -float("inf"), float("inf"), 0)
         return action
 
