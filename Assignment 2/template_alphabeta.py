@@ -94,15 +94,15 @@ class AlphaBetaAgent(Agent):
                 If the state is a terminal state or the depth limit is reached, the action will be None.
         """
         if depth == self.max_depth :
-            return tuple(state.utility, None) #Ici, jsp si il faut mettre state.utility ou alpha ?
+            return state.utility, None #Ici, jsp si il faut mettre state.utility ou alpha ?
         best_val = -float("inf")
         move = None
         for a in state.actions :
-            (val_to_compare, move_to_compare) = self.min_value(self.result(state,a), alpha,beta, depth-1)
+            (val_to_compare, move_to_compare) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
                 best_val = val_to_compare
                 move = move_to_compare
-        return tuple(best_val, move)
+        return best_val, move
 
     def min_value(self, state, alpha, beta, depth):
         """Computes the minimum achievable value for the opposing player at a given state using the alpha-beta pruning.
@@ -121,13 +121,14 @@ class AlphaBetaAgent(Agent):
             tuple: A tuple containing the best value achievable from this state for the opponent and the action that leads to this value.
                 If the state is a terminal state or the depth limit is reached, the action will be None.
         """
+
         if depth == self.max_depth :
-            return tuple(state.utility, None) #Ici, jsp si il faut mettre state.utility ou alpha ?
+            return state.utility, None #Ici, jsp si il faut mettre state.utility ou alpha ?
         best_val = float("inf")
         move = None
         for a in state.actions :
-            (val_to_compare, move_to_compare) = self.max_value(self.result(state,a), alpha,beta, depth-1)
+            (val_to_compare, move_to_compare) = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
                 best_val = val_to_compare
                 move = move_to_compare
-        return tuple(best_val, move)
+        return best_val, move
