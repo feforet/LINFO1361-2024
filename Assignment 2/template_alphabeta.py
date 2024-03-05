@@ -95,10 +95,10 @@ class AlphaBetaAgent(Agent):
         """
         #voir p200
         if depth == self.max_depth or self.game.is_terminal(state) :
-            return state.utility, None #Ici, jsp si il faut mettre state.utility ou alpha ? self.game.utility(state,self.player)
+            return self.game.utility(state,self.player), None #Ici, jsp si il faut mettre state.utility ou self.game.utility(state,self.player)
         best_val = -float("inf")
         move = None
-        for a in state.actions :
+        for a in self.game.actions(state) : # ou state.actions?
             (val_to_compare, _) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
                 best_val = val_to_compare
@@ -127,10 +127,10 @@ class AlphaBetaAgent(Agent):
         """
 
         if depth == self.max_depth or self.game.is_terminal(state) :
-            return state.utility, None #Ici, jsp si il faut mettre state.utility ou alpha ?
+            return self.game.utility(state,self.player), None #Ici, jsp si il faut mettre state.utility ou self.game.utility(state,self.player)
         best_val = float("inf")
         move = None
-        for a in state.actions :
+        for a in self.game.actions(state): # ou state.actions?
             (val_to_compare, _) = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
             #print(f"move is : {a} \n")
             if (val_to_compare < best_val):
