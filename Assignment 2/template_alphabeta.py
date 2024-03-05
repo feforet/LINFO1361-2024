@@ -94,7 +94,7 @@ class AlphaBetaAgent(Agent):
                 If the state is a terminal state or the depth limit is reached, the action will be None.
         """
         #voir p200
-        if depth == self.max_depth or self.game.is_terminal(state) :
+        if self.is_cutoff(state,depth) :
             return self.game.utility(state,self.player), None #Ici, jsp si il faut mettre state.utility ou self.game.utility(state,self.player)
         best_val = -float("inf")
         move = None
@@ -103,9 +103,9 @@ class AlphaBetaAgent(Agent):
             if (val_to_compare > best_val):
                 best_val = val_to_compare
                 move = a
-                alpha = max(alpha,best_val)
             if best_val >= beta :
                 return best_val,move
+            alpha = max(alpha,best_val)
         return best_val, move
 
     def min_value(self, state, alpha, beta, depth):
@@ -126,17 +126,16 @@ class AlphaBetaAgent(Agent):
                 If the state is a terminal state or the depth limit is reached, the action will be None.
         """
 
-        if depth == self.max_depth or self.game.is_terminal(state) :
+        if self.is_cutoff(state,depth) :
             return self.game.utility(state,self.player), None #Ici, jsp si il faut mettre state.utility ou self.game.utility(state,self.player)
         best_val = float("inf")
         move = None
         for a in self.game.actions(state): # ou state.actions?
-            (val_to_compare, _) = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
-            #print(f"move is : {a} \n")
+            val_to_compare,_ = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare < best_val):
                 best_val = val_to_compare
                 move = a
-                beta = min(beta,best_val)
             if best_val <= alpha :
                 return best_val, move
+            beta = min(beta,best_val)
         return best_val, move
