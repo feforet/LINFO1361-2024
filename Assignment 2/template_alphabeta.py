@@ -93,12 +93,11 @@ class AlphaBetaAgent(Agent):
             tuple: A tuple containing the best value achievable from this state and the action that leads to this value.
                 If the state is a terminal state or the depth limit is reached, the action will be None.
         """
-        #voir p200
         if self.is_cutoff(state,depth) :
-            return self.game.utility(state,self.player), None #Ici, jsp si il faut mettre state.utility ou self.game.utility(state,self.player)
+            return self.eval(state), None
         best_val = -float("inf")
         move = None
-        for a in self.game.actions(state) : # ou state.actions?
+        for a in self.game.actions(state) :
             (val_to_compare, _) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
                 best_val = val_to_compare
@@ -127,10 +126,10 @@ class AlphaBetaAgent(Agent):
         """
 
         if self.is_cutoff(state,depth) :
-            return self.game.utility(state,self.player), None #Ici, jsp si il faut mettre state.utility ou self.game.utility(state,self.player)
+            return self.eval(state), None
         best_val = float("inf")
         move = None
-        for a in self.game.actions(state): # ou state.actions?
+        for a in self.game.actions(state): 
             val_to_compare,_ = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare < best_val):
                 best_val = val_to_compare

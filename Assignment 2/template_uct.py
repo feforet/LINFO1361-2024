@@ -138,4 +138,4 @@ class UCTAgent(Agent):
         Returns:
             float: The UCB1 value.
         """
-        ...
+        return node.U / node.N + math.sqrt(2 * math.log(node.parent.N) / node.N) if node.N != 0 else float("inf")
