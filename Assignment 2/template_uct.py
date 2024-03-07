@@ -91,7 +91,9 @@ class UCTAgent(Agent):
         Returns:
             Node: The selected leaf node.
         """
-        ...
+        # Si j'ai bien compris, on doit choisir dans self.children le noeud qui maximise UCB1
+        node = max(node.children, key=lambda n: self.UCB1(n))
+        return node
     
     def expand(self, node):
         """Expands a node by adding a child node to the tree for an unexplored action.
@@ -107,7 +109,15 @@ class UCTAgent(Agent):
         Returns:
             Node: The newly created child node representing the state after an unexplored action. If the node is at a terminal state, the node itself is returned.
         """
-        ...
+        if node.state.is_terminal():
+            return node
+        for action in node.state.get_actions():
+            if action not in node.children.values():
+                new_state = node.state.apply_action(action)
+                new_node = Node(node, new_state)
+                node.children[new_node] = action
+                return new_node
+        return random.choice(list(node.children.keys()))
 
     def simulate(self, state):
         """Simulates a random play-through from the given state to a terminal state.
@@ -118,7 +128,10 @@ class UCTAgent(Agent):
         Returns:
             float: The utility value of the terminal state for the player to move.
         """
-        ...
+        while not state.is_terminal():
+            action = random.choice(state.get_actions())
+            state = state.apply_action(action)
+        return state.get_result(self.player)
 
     def back_propagate(self, result, node):
         """Propagates the result of a simulation back up the tree, updating node statistics.
@@ -127,7 +140,10 @@ class UCTAgent(Agent):
             result (float): The result of the simulation.
             node (Node): The node to start backpropagation from.
         """
-        ...
+        while node is not None:
+            node.N += 1
+            node.U += result
+            node = node.parent
 
     def UCB1(self, node):
         """Calculates the UCB1 value for a given node.
