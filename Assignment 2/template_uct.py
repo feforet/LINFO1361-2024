@@ -91,9 +91,10 @@ class UCTAgent(Agent):
         Returns:
             Node: The selected leaf node.
         """
-        # Si j'ai bien compris, on doit choisir dans self.children le noeud qui maximise UCB1
-        node = max(node.children, key=lambda n: self.UCB1(n))
-        return node
+        current = node
+        while (not self.game.is_terminal(current.state)) and (len(current.children) != len(current.state.actions)) and (current.N != 0):
+            current = max(node.children, key=self.UCB1)
+        return current
     
     def expand(self, node):
         """Expands a node by adding a child node to the tree for an unexplored action.
@@ -109,15 +110,15 @@ class UCTAgent(Agent):
         Returns:
             Node: The newly created child node representing the state after an unexplored action. If the node is at a terminal state, the node itself is returned.
         """
-        if node.state.is_terminal():
+        if self.game.is_terminal(node.state):
             return node
-        for action in node.state.get_actions():
-            if action not in node.children.values():
-                new_state = node.state.apply_action(action)
-                new_node = Node(node, new_state)
-                node.children[new_node] = action
-                return new_node
-        return random.choice(list(node.children.keys()))
+        actions = node.state.actions
+        actions = [a for a in actions if a not in node.children.values()]
+        action = actions[0]
+        new_state = self.game.result(node.state, action)
+        new_node = Node(node, new_state)
+        node.children[new_node] = action
+        return new_node
 
     def simulate(self, state):
         """Simulates a random play-through from the given state to a terminal state.
@@ -128,10 +129,12 @@ class UCTAgent(Agent):
         Returns:
             float: The utility value of the terminal state for the player to move.
         """
-        while not state.is_terminal():
-            action = random.choice(state.get_actions())
-            state = state.apply_action(action)
-        return state.get_result(self.player)
+        round = 0
+        while (not self.game.is_terminal(state)) and (round < 500):
+            action = random.choice(state.actions)
+            state = self.game.result(state, action)
+            round += 1
+        return state.utility if state.to_move == 0 else (-state.utility)
 
     def back_propagate(self, result, node):
         """Propagates the result of a simulation back up the tree, updating node statistics.
@@ -142,8 +145,10 @@ class UCTAgent(Agent):
         """
         while node is not None:
             node.N += 1
-            node.U += result
+            if result == 1:
+                node.U += 1
             node = node.parent
+            result = - result
 
     def UCB1(self, node):
         """Calculates the UCB1 value for a given node.

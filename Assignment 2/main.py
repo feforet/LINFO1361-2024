@@ -18,9 +18,9 @@ def get_agents(args, display):
         elif agent_name == "random":
             return RandomAgent(player, ShobuGame())
         elif agent_name == "alphabeta":
-            return AlphaBetaAgent(player, ShobuGame(),2)
+            return AlphaBetaAgent(player, ShobuGame(), 2)
         elif agent_name == "mcts":
-            return UCTAgent(player, ShobuGame())
+            return UCTAgent(player, ShobuGame(), 1000)
         elif agent_name == "agent":
             return AI(player, ShobuGame())
         else:
@@ -57,7 +57,7 @@ def main(agent_white, agent_black, display=False, log_file=None, play_time=600):
                     t0 = time.perf_counter()
                     action = agent_white.play(state, remaining_time_0)
                     while action == -2:
-                        action = agent_white.play(state)
+                        action = agent_white.play(state, remaining_time_0)
                     if play_time is not None:
                         remaining_time_0 -= time.perf_counter() - t0
                 elif game.to_move(state) == 1:
