@@ -73,7 +73,7 @@ class UCTAgent(Agent):
         """
         root = Node(None, state)
         root.children = {Node(root, self.game.result(root.state, action)): action for action in self.game.actions(root.state) }
-        for i in range(self.iteration):
+        for _ in range(self.iteration):
             leaf = self.select(root)
             child = self.expand(leaf)
             result = self.simulate(child.state)
@@ -81,7 +81,7 @@ class UCTAgent(Agent):
         max_state = max(root.children, key=lambda n: n.N)
         return root.children.get(max_state)
 
-    def select(self, node): # J'imagine que c'est bon vu qu'ils disent rien dessus sur inginious
+    def select(self, node): # J'imagine que c'est bon vu qu'ils disent rien dessus sur inginious, mais elle timeout...
         """Selects a leaf node using the UCB1 formula to maximize exploration and exploitation.
 
         A node is considered a leaf if it has a potential child from which no simulation has yet been initiated or when the game is finished.
@@ -94,13 +94,13 @@ class UCTAgent(Agent):
         """
         current = node
         while not self.game.is_terminal(current.state):
-            if current.children and all(child.N > 0 for child in current.children):
+            if all(child.N > 0 for child in current.children):
                 current = max(current.children, key=self.UCB1)
             else:
                 break
         return current
     
-    def expand(self, node): # Your expand function doesn't add children to the selected child.
+    def expand(self, node): # C'est bon normalement !
         """Expands a node by adding a child node to the tree for an unexplored action.
 
         If no child has been initialized for this node, the function initializes a child node for each action and store them in the children dictionary.
@@ -117,7 +117,9 @@ class UCTAgent(Agent):
             return node
         if len(node.children) == 0:
             node.children = {Node(node, self.game.result(node.state, action)): action for action in self.game.actions(node.state)}
-        return random.choice([child for child in node.children if child.N == 0])
+        tmp = random.choice([child for child in node.children if child.N == 0])
+        tmp.children = {Node(tmp, self.game.result(tmp.state, action)): action for action in self.game.actions(tmp.state)}
+        return tmp
 
     def simulate(self, state): # J'imagine que c'est bon vu qu'ils disent rien dessus sur inginious
         """Simulates a random play-through from the given state to a terminal state.
