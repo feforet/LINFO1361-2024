@@ -144,11 +144,14 @@ class UCTAgent(Agent):
             float: The utility value of the resulting terminal state in the point of viewof the opponent in the original state.
         """
         round = 0
+        first_player = self.game.to_move(state)
         while (not self.game.is_terminal(state)) and (round < 500):
             action = random.choice(self.game.actions(state))
             state = self.game.result(state, action)
             round += 1
-        return -state.utility if state.to_move == 0 else (state.utility)
+        if self.game.to_move(state) == first_player:
+            return self.game.utility(state, self.player)
+        return self.game.utility(state, 1 - self.player)
 
     def back_propagate(self, result, node): # Elle est bonne !
         """Propagates the result of a simulation back up the tree, updating node statistics.
