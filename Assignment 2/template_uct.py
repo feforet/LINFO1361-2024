@@ -94,13 +94,16 @@ class UCTAgent(Agent):
         Returns:
             Node: The selected leaf node.
         """
+        #list où ajouter tous les scores UCB1 
         current = node
-        while not self.game.is_terminal(current.state):
-            if all(child.N > 0 for child in current.children):
-                current = max(current.children, key=self.UCB1)
-            else:
-                break
+        while not self.game.is_terminal(current.state) and all(child.N > 0 for child in current.children):
+            lst = []
+            for child in current.children.keys():
+                lst.append(self.UCB1(child))
+            max_score_index = lst.index(max(lst))
+            current = list(current.children.keys())[max_score_index] 
         return current
+    
     
     def expand(self, node): # C'est bon normalement !
         """Expands a node by adding a child node to the tree for an unexplored action.
@@ -122,6 +125,7 @@ class UCTAgent(Agent):
         tmp = random.choice([child for child in node.children if child.N == 0])
         tmp.children = {Node(tmp, self.game.result(tmp.state, action)): action for action in self.game.actions(tmp.state)}
         return tmp
+    
 
     def simulate(self, state): # J'imagine que c'est bon vu qu'ils disent rien dessus sur inginious
         """Simulates a random play-through from the given state to a terminal state.
@@ -158,7 +162,7 @@ class UCTAgent(Agent):
             node = node.parent
             result = - result
 
-    def UCB1(self, node): # Your UCB1 implementation doesn't return the right value when N is not 0
+    def UCB1(self, node): #now we're good folks
         """Calculates the UCB1 value for a given node.
 
         Args:
