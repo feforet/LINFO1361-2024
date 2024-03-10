@@ -167,4 +167,7 @@ class UCTAgent(Agent):
         Returns:
             float: The UCB1 value of the node. Returns infinity if the node has not been visited yet.
         """
-        return node.U / node.N + math.sqrt(2 * math.log(node.parent.N) / node.N) if node.N != 0 else float('inf')
+        if(node.N == 0):
+            return float('inf')
+        utility = node.N - node.U
+        return (utility/node.N) + math.sqrt(2 * math.log(node.parent.N) / node.N)
