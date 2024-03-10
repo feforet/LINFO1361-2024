@@ -103,6 +103,13 @@ class UCTAgent(Agent):
             max_score_index = lst.index(max(lst))
             current = list(current.children.keys())[max_score_index] 
         return current
+        # current = node
+        # while not self.game.is_terminal(current.state):
+        #     if all(child.N > 0 for child in current.children):
+        #         current = max(current.children, key=self.UCB1)
+        #     else:
+        #         break
+        # return current
     
     
     def expand(self, node): # C'est bon normalement !
@@ -141,7 +148,7 @@ class UCTAgent(Agent):
             action = random.choice(self.game.actions(state))
             state = self.game.result(state, action)
             round += 1
-        return state.utility if state.to_move == 0 else (-state.utility)
+        return -state.utility if state.to_move == 0 else (state.utility)
 
     def back_propagate(self, result, node): # Elle est bonne !
         """Propagates the result of a simulation back up the tree, updating node statistics.
