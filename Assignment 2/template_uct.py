@@ -94,22 +94,13 @@ class UCTAgent(Agent):
         Returns:
             Node: The selected leaf node.
         """
-        #list où ajouter tous les scores UCB1 
         current = node
-        while not self.game.is_terminal(current.state) and all(child.N > 0 for child in current.children):
-            lst = []
-            for child in current.children.keys():
-                lst.append(self.UCB1(child))
-            max_score_index = lst.index(max(lst))
-            current = list(current.children.keys())[max_score_index] 
+        while not self.game.is_terminal(current.state):
+            if all(child.N > 0 for child in current.children):
+                current = max(current.children, key=self.UCB1)
+            else:
+                break
         return current
-        # current = node
-        # while not self.game.is_terminal(current.state):
-        #     if all(child.N > 0 for child in current.children):
-        #         current = max(current.children, key=self.UCB1)
-        #     else:
-        #         break
-        # return current
     
     
     def expand(self, node): # C'est bon normalement !
