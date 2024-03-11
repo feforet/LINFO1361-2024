@@ -81,7 +81,7 @@ class UCTAgent(Agent):
         max_state = max(root.children, key=lambda n: n.N)
         return root.children.get(max_state)
 
-    def select(self, node): # J'imagine que c'est bon vu qu'ils disent rien dessus sur inginious, mais elle timeout...
+    def select(self, node):
         """Selects a leaf node using the UCB1 formula to maximize exploration and exploitation.
 
         The function recursively selects the children of the node that maximise the UCB1 score, exploring the most promising 
@@ -95,15 +95,15 @@ class UCTAgent(Agent):
             Node: The selected leaf node.
         """
         current = node
-        while not self.game.is_terminal(current.state):
-            if all(child.N > 0 for child in current.children):
-                current = max(current.children, key=self.UCB1)
+        while not self.game.is_terminal(current.state): #if we are in a terminal state, we return the current node
+            if all(child.N > 0 for child in current.children): #if all the children have been visited at least once
+                current = max(current.children, key=self.UCB1) #we select the one with the highest UCB1 value
             else:
                 break
         return current
     
     
-    def expand(self, node): # C'est bon normalement !
+    def expand(self, node):
         """Expands a node by adding a child node to the tree for an unexplored action.
 
         The function returns one of the children of the node for which no simulation has yet been performed. 
@@ -125,7 +125,7 @@ class UCTAgent(Agent):
         return tmp
     
 
-    def simulate(self, state): # J'imagine que c'est bon vu qu'ils disent rien dessus sur inginious
+    def simulate(self, state):
         """Simulates a random play-through from the given state to a terminal state.
 
         Args:
@@ -135,16 +135,16 @@ class UCTAgent(Agent):
             float: The utility value of the resulting terminal state in the point of viewof the opponent in the original state.
         """
         round = 0
-        first_player = self.game.to_move(state)
+        first_player = self.game.to_move(state) #to keep in mind who is the first player to compare at the end
         while (not self.game.is_terminal(state)) and (round < 500):
-            action = random.choice(self.game.actions(state))
-            state = self.game.result(state, action)
-            round += 1
-        if self.game.to_move(state) == first_player:
+            action = random.choice(self.game.actions(state)) #random action in the current state
+            state = self.game.result(state, action) #new state after the action
+            round += 1 #to avoid infinite loop
+        if self.game.to_move(state) == first_player: #to see which utility to return
             return self.game.utility(state, self.player)
         return self.game.utility(state, 1 - self.player)
 
-    def back_propagate(self, result, node): # Elle est bonne !
+    def back_propagate(self, result, node):
         """Propagates the result of a simulation back up the tree, updating node statistics.
 
         This method is responsible for updating the statistics for each node according to the result of the simulation. 
