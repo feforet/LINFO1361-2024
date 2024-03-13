@@ -118,10 +118,10 @@ class UCTAgent(Agent):
         """
         if self.game.is_terminal(node.state):
             return node
-        if len(node.children) == 0:
+        if len(node.children) == 0:  # if the node has no children, we initialize them
             node.children = {Node(node, self.game.result(node.state, action)): action for action in self.game.actions(node.state)}
-        tmp = random.choice([child for child in node.children if child.N == 0])
-        tmp.children = {Node(tmp, self.game.result(tmp.state, action)): action for action in self.game.actions(tmp.state)}
+        tmp = random.choice([child for child in node.children if child.N == 0])  # randomly select a child that has not been visited yet
+        tmp.children = {Node(tmp, self.game.result(tmp.state, action)): action for action in self.game.actions(tmp.state)}  # initialize the children of the selected child
         return tmp
     
 
@@ -161,7 +161,7 @@ class UCTAgent(Agent):
             if result == 1:
                 node.U += 1
             node = node.parent
-            result = - result
+            result = - result  # alternate the result to update the utility of the parent node
 
     def UCB1(self, node): #now we're good folks
         """Calculates the UCB1 value for a given node.
