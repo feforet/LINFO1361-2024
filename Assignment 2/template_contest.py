@@ -1,5 +1,6 @@
 from agent import Agent
 import random
+import numpy as np
 
 class AI(Agent):
     """An agent that plays following your algorithm.
@@ -11,6 +12,24 @@ class AI(Agent):
         game (ShobuGame): The game the agent is playing.
     """
 
+    class Node:
+        def __init__(self, state, action, value, children, min_max):
+            self.state = state
+            self.action = action
+            self.value = value
+            self.min_max = min_max
+            self.children = np.array(children)
+            np.sort(self.children)
+            if min_max == "max":
+                self.children = np.flip(self.children)
+        
+        def __lt__(self, other):
+            return self.value < other.value
+        def __gt__(self, other):
+            return self.value > other.value
+        def __eq__(self, other):
+            return self.value == other.value
+
     def __init__(self, player, game):
         """Initializes an AI instance with a specified player and game.
 
@@ -20,6 +39,7 @@ class AI(Agent):
         """
         super().__init__(player, game)
         self.max_depth = 2
+        self.tree = {}
 
     def play(self, state, remaining_time):
         """Determines the next action to take in the given state.
@@ -45,7 +65,7 @@ class AI(Agent):
         """
         return depth >= self.max_depth or state.utility != 0
     
-    def eval(self, state):
+    def eval(self, state, depth):
         """Evaluates the given state and returns a score from the perspective of the agent's player.
 
         Args:
@@ -54,6 +74,8 @@ class AI(Agent):
         Returns:
             float: The evaluated score of the state.
         """
+        if state.utility != 0:
+            return 1000 * state.utility # * self.max_depth / depth # to make the agent prefer winning faster
         n_moves = len(self.game.actions(state))
         n_pieces_me = 0
         n_pieces_opponent = 0
@@ -66,6 +88,9 @@ class AI(Agent):
             n_pieces_opponent += len(state.board[i][1 - self.player])
             min_me = min(min_me, len(state.board[i][me]))
             min_opponent = min(min_opponent, len(state.board[i][opponent]))
+
+        # il faut trouver un moyen que la valeur de retour soit bornée entre -1 et 1
+        # au chap 23, ils parlent de comment faire du machine learning pour trouver les bons poids
         return (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent)
 
     def alpha_beta_search(self, state):
@@ -97,7 +122,7 @@ class AI(Agent):
                 If the state is a terminal state or the depth limit is reached, the action will be None.
         """
         if self.is_cutoff(state,depth) :
-            return self.eval(state), None
+            return self.eval(state, depth), None
         best_val = -float("inf")
         move = None
         for a in self.game.actions(state) :
@@ -129,7 +154,7 @@ class AI(Agent):
         """
 
         if self.is_cutoff(state,depth) :
-            return self.eval(state), None
+            return self.eval(state, depth), None
         best_val = float("inf")
         move = None
         for a in self.game.actions(state): 
