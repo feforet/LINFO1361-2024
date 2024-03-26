@@ -1,6 +1,7 @@
 from agent import Agent
 import random
 import numpy as np
+import time
 
 class AI(Agent):
     """An agent that plays following your algorithm.
@@ -52,6 +53,14 @@ class AI(Agent):
         Returns:
             ShobuAction: The chosen action.
         """
+        
+        # Adjust search depth based on remaining time
+        # if remaining_time > 10e-7:  # Example threshold, adjust as needed
+        #     max_depth = 3  # Longer search for more time
+        # else:
+        #     max_depth = 2  # Shorter search for less time
+        
+        # self.max_depth = max_depth
         return self.alpha_beta_search(state)
 
     def is_cutoff(self, state, depth):
@@ -79,14 +88,14 @@ class AI(Agent):
         min_opponent = 4
         me = self.player # 1 or 0
         opponent = 1 - self.player
-        worst_board = 10
+        # my_mobility = len(self.game.actions(state))
+        # opponent_mobility = len(self.game.actions(state))
         for i in range(4):
-            worst_board = min(worst_board, len(state.board[i][me]) - len(state.board[i][opponent]))
             min_me = min(min_me, len(state.board[i][me]))
             min_opponent = min(min_opponent, len(state.board[i][opponent]))
-        if worst_board < 0:
-            return len(state.board[i][me]) - len(state.board[i][opponent])
-        return float(min_me - min_opponent)
+            
+        return float(min_me - min_opponent) 
+        #+ my_mobility-opponent_mobility
         # Ton essai
         #if state.utility != 0:
         #     return 1000 * state.utility # * self.max_depth / depth # to make the agent prefer winning faster
@@ -139,11 +148,13 @@ class AI(Agent):
             return self.eval(state, depth), None
 
         state_key = str(state)
-        if state_key in self.transposition_table:
+        if state_key in self.transposition_table.keys():
             return self.transposition_table[state_key]
 
         best_val = -float("inf")
         move = None
+        actions = self.game.actions(state)
+        actions.sort(key=lambda a: self.eval(state, depth), reverse=True)
         for a in self.game.actions(state) :
             (val_to_compare, _) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
@@ -154,6 +165,7 @@ class AI(Agent):
             alpha = max(alpha,best_val)
 
         self.transposition_table[state_key] = (best_val, move)
+
         return best_val, move
 
     def min_value(self, state, alpha, beta, depth):
@@ -178,7 +190,7 @@ class AI(Agent):
             return self.eval(state, depth), None
         
         state_key = str(state)
-        if state_key in self.transposition_table:
+        if state_key in self.transposition_table.keys():
             return self.transposition_table[state_key]
         best_val = float("inf")
         move = None
@@ -190,6 +202,5 @@ class AI(Agent):
             if best_val <= alpha :
                 return best_val,move
             beta = min(beta,best_val)
-
         self.transposition_table[state_key] = (best_val, move)
         return best_val, move
