@@ -38,8 +38,9 @@ class AI(Agent):
             game (ShobuGame): The Shobu game instance the agent will play on.
         """
         super().__init__(player, game)
-        self.max_depth = 2
+        self.max_depth = 3
         self.tree = {}
+        self.transposition_table = {}
 
     def play(self, state, remaining_time):
         """Determines the next action to take in the given state.
@@ -74,24 +75,37 @@ class AI(Agent):
         Returns:
             float: The evaluated score of the state.
         """
-        if state.utility != 0:
-            return 1000 * state.utility # * self.max_depth / depth # to make the agent prefer winning faster
-        n_moves = len(self.game.actions(state))
-        n_pieces_me = 0
-        n_pieces_opponent = 0
-        min_me = 4 # 4 boards
+        min_me = 4 # 4 pieces
         min_opponent = 4
         me = self.player # 1 or 0
         opponent = 1 - self.player
+        worst_board = 10
         for i in range(4):
-            n_pieces_me += len(state.board[i][self.player])
-            n_pieces_opponent += len(state.board[i][1 - self.player])
+            worst_board = min(worst_board, len(state.board[i][me]) - len(state.board[i][opponent]))
             min_me = min(min_me, len(state.board[i][me]))
             min_opponent = min(min_opponent, len(state.board[i][opponent]))
+        if worst_board < 0:
+            return len(state.board[i][me]) - len(state.board[i][opponent])
+        return float(min_me - min_opponent)
+        # Ton essai
+        #if state.utility != 0:
+        #     return 1000 * state.utility # * self.max_depth / depth # to make the agent prefer winning faster
+        # n_moves = len(self.game.actions(state))
+        # n_pieces_me = 0
+        # n_pieces_opponent = 0
+        # min_me = 4 # 4 boards
+        # min_opponent = 4
+        # me = self.player # 1 or 0
+        # opponent = 1 - self.player
+        # for i in range(4):
+        #     n_pieces_me += len(state.board[i][self.player])
+        #     n_pieces_opponent += len(state.board[i][1 - self.player])
+        #     min_me = min(min_me, len(state.board[i][me]))
+        #     min_opponent = min(min_opponent, len(state.board[i][opponent]))
 
-        # il faut trouver un moyen que la valeur de retour soit bornée entre -1 et 1
-        # au chap 23, ils parlent de comment faire du machine learning pour trouver les bons poids
-        return (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent)
+        # # il faut trouver un moyen que la valeur de retour soit bornée entre -1 et 1
+        # # au chap 23, ils parlent de comment faire du machine learning pour trouver les bons poids
+        # return (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent)
 
     def alpha_beta_search(self, state):
         """Implements the alpha-beta pruning algorithm to find the best action.
@@ -123,6 +137,11 @@ class AI(Agent):
         """
         if self.is_cutoff(state,depth) :
             return self.eval(state, depth), None
+
+        state_key = str(state)
+        if state_key in self.transposition_table:
+            return self.transposition_table[state_key]
+
         best_val = -float("inf")
         move = None
         for a in self.game.actions(state) :
@@ -133,6 +152,8 @@ class AI(Agent):
             if best_val >= beta :
                 return best_val,move
             alpha = max(alpha,best_val)
+
+        self.transposition_table[state_key] = (best_val, move)
         return best_val, move
 
     def min_value(self, state, alpha, beta, depth):
@@ -155,6 +176,10 @@ class AI(Agent):
 
         if self.is_cutoff(state,depth) :
             return self.eval(state, depth), None
+        
+        state_key = str(state)
+        if state_key in self.transposition_table:
+            return self.transposition_table[state_key]
         best_val = float("inf")
         move = None
         for a in self.game.actions(state): 
@@ -163,6 +188,8 @@ class AI(Agent):
                 best_val = val_to_compare
                 move = a
             if best_val <= alpha :
-                return best_val, move
+                return best_val,move
             beta = min(beta,best_val)
+
+        self.transposition_table[state_key] = (best_val, move)
         return best_val, move
