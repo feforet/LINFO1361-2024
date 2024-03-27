@@ -2,6 +2,7 @@ from agent import Agent
 import random
 import numpy as np
 import time
+from decimal import *
 
 class AI(Agent):
     """An agent that plays following your algorithm.
@@ -57,12 +58,12 @@ class AI(Agent):
         # Adjust search depth based on remaining time
         if remaining_time > 300 :  # Example threshold, adjust as needed
             self.max_depth = 4 # Longer search for more time
-            print("I have change depth to 4 \n")
+            #   print("I have change depth to 4 \n")
         else :
             self.max_depth = 3
-            print("I have change depth to 3 \n")
-        print("remaining_time", remaining_time)
-        return self.alpha_beta_search(state)
+            # print("I have change depth to 3 \n")
+        # print("remaining_time", remaining_time)
+        return self.alpha_beta_search(state, remaining_time)
 
     def is_cutoff(self, state, depth):
         """Determines if the search should be cut off at the current depth.
@@ -128,7 +129,7 @@ class AI(Agent):
         
         return 0.8*(n_pieces_me - n_pieces_opponent)/16 + 0.2*(min_me - min_opponent)/4
 
-    def alpha_beta_search(self, state):
+    def alpha_beta_search(self, state, remaining_time):
         """Implements the alpha-beta pruning algorithm to find the best action.
 
         Args:
@@ -139,6 +140,22 @@ class AI(Agent):
         """
         _, action = self.max_value(state, -float("inf"), float("inf"), 0)
         return action
+    
+        # start_time = time.time()
+        # move = None
+
+        # # Perform iterative deepening until time runs out
+        # depth = 2
+        # while time.time() - start_time < remaining_time:
+        #     val, action = self.max_value(state, -float("inf"), float("inf"), depth)
+        #     if time.time() - start_time >= remaining_time:
+        #         break  # Exit loop if time runs out
+        #     move = action  # Update best action found so far
+        #     if val > 0.6 :
+        #         return move  # Exit loop if a winning move is found
+        #     depth += 1  # Increase depth for the next iteration
+
+        # return move
         # for depth in range(1, self.max_depth + 1):
         #     best_val, move = self.max_value(state, -float("inf"), float("inf"), depth)
         #     print("best_val is : \n",best_val)
@@ -168,12 +185,13 @@ class AI(Agent):
 
         state_key = str(state)
         if state_key in self.transposition_table.keys():
+            # print("I came here in max value \n")
             return self.transposition_table[state_key]
 
         best_val = -float("inf")
         move = None
         actions = self.game.actions(state)
-        actions.sort(key=lambda a: self.eval(state, self.max_depth), reverse=True)
+        actions.sort(key=lambda a: self.game.result(state, a), reverse=True)
         for a in actions :
             (val_to_compare, _) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
@@ -184,7 +202,8 @@ class AI(Agent):
             alpha = max(alpha,best_val)
 
         self.transposition_table[state_key] = (best_val, move)
-        print("best_val is :  \n",best_val)
+        # getcontext().prec = 3
+        # print("best_val is :  \n",Decimal(best_val))
 
         return best_val, move
 
@@ -211,11 +230,12 @@ class AI(Agent):
         
         state_key = str(state)
         if state_key in self.transposition_table.keys():
+            # print("I came here in min value \n")
             return self.transposition_table[state_key]
         best_val = float("inf")
         move = None
         actions = self.game.actions(state)
-        actions.sort(key= lambda a : self.eval(state, depth), reverse=True)
+        actions.sort(key=lambda a: self.game.result(state, a), reverse=True)
         for a in actions: 
             val_to_compare,_ = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare < best_val):
@@ -225,6 +245,8 @@ class AI(Agent):
                 return best_val,move
             beta = min(beta,best_val)
         self.transposition_table[state_key] = (best_val, move)
+        # print(len(self.transposition_table))
+
         return best_val, move
     
         
