@@ -103,7 +103,7 @@ class AI(Agent):
         #+ my_mobility-opponent_mobility
         # Ton essai
         if state.utility != 0:
-            return 1000 * state.utility # * self.max_depth / depth # to make the agent prefer winning faster
+            return 10 * state.utility # * self.max_depth / depth # to make the agent prefer winning faster
         n_moves = len(self.game.actions(state))
         n_pieces_me = 0
         n_pieces_opponent = 0
@@ -116,8 +116,6 @@ class AI(Agent):
             n_pieces_opponent += len(state.board[i][opponent])
             min_me = min(min_me, len(state.board[i][me]))
             min_opponent = min(min_opponent, len(state.board[i][opponent]))
-            if(len(state.board[i][opponent]) == 0 or len(state.board[i][opponent]) == 1):
-                return 1
 
         # il faut trouver un moyen que la valeur de retour soit bornée entre -1 et 1
         # au chap 23, ils parlent de comment faire du machine learning pour trouver les bons poids
@@ -138,7 +136,10 @@ class AI(Agent):
         # getcontext().prec = 3
         # print("val returned by eval : \n",Decimal(0.8*(n_pieces_me - n_pieces_opponent)/16 + 0.2*(min_me - min_opponent)/4))
         
-        return 0.5*(n_pieces_me - n_pieces_opponent)/16 + 0.5*(min_me - min_opponent)/4
+        res = 0.5*(n_pieces_me - n_pieces_opponent)/16 + 0.5*(min_me - min_opponent)/4
+        if (abs(res)>=1):
+            print("error in eval function \n")
+        return res
 
     def alpha_beta_search(self, state, remaining_time):
         """Implements the alpha-beta pruning algorithm to find the best action.
@@ -194,7 +195,7 @@ class AI(Agent):
         if self.is_cutoff(state,depth) :
             return self.eval(state, depth), None
 
-        state_key = str(state)
+        state_key = str(state.board) + str(state.to_move)
         if state_key in self.transposition_table.keys():
             # print("I came here in max value \n")
             return self.transposition_table[state_key]
@@ -203,9 +204,10 @@ class AI(Agent):
         move = None
         actions = self.game.actions(state)
         actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
+        actions = actions[:(len(actions)//2)]
 
         for i in range (1,len(actions)):
-            print(self.eval(self.game.result(state,i),depth))
+            # print(self.eval(self.game.result(state,i),depth))
             if (self.eval(self.game.result(state,i-1),depth) < self.eval(self.game.result(state,i),depth)):
                 print("it is not correctly sorted in max\n")
         for a in actions :
@@ -246,14 +248,16 @@ class AI(Agent):
         if self.is_cutoff(state,depth) :
             return self.eval(state, depth), None
         
-        state_key = str(state)
+        state_key = str(state.board) + str(state.to_move)
         if state_key in self.transposition_table.keys():
             # print("I came here in min value \n")
             return self.transposition_table[state_key]
         best_val = float("inf")
         move = None
         actions = self.game.actions(state)
-        actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
+        actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=False)
+        actions = actions[:len(actions)//2]
+
         for i in range (1,len(actions)):
             if (self.eval(self.game.result(state,i-1),depth) >  self.eval(self.game.result(state,i),depth)) :
                 print("it is not correctly sorted in min \n")
@@ -274,17 +278,30 @@ class AI(Agent):
     
     def iterative_deepening(self, state, remaining_time):
         start_time = time.time()
+        if (remaining_time > 300):
+            self.max_depth = 4
+        elif (remaining_time > 50):
+            self.max_depth = 3
+        else:
+            self.max_depth = 2
+
+       #  self.transposition_table = {}
+        val, action = self.max_value(state, -float("inf"), float("inf"), 0)
+        return action
 
         # Perform iterative deepening until time runs out
-        if time.time() - start_time >= remaining_time:
-            self.max_depth = 4
-        # for depth in range(0, 1000000000000000000000):
-        #     print("depth is : ", depth)
-        #     if remaining_time > 3
-        #     _, action = self.max_value(state, -float("inf"), float("inf"), depth)
-        #     if time.time() - start_time >= remaining_time-1:
-        #         break
-        #     if(self.is_cutoff(state, depth)==False):
-        #         return action
-        # print("i came here \n")
-        # return action
+        # if time.time() - start_time >= remaining_time:
+        #     self.max_depth = 4
+        """
+        for max_d in range(1, 10000000000000000000000000000000000):
+            self.transposition_table = {}
+            print("max_depth is : ", max_d)
+            self.max_depth = max_d
+            val, action = self.max_value(state, -float("inf"), float("inf"), 0)
+            if time.time() - start_time >= remaining_time/100:
+                break
+            if val > 1:
+                break
+        print("i came here \n")
+        return action
+        """
