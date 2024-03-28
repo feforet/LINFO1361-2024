@@ -56,14 +56,14 @@ class AI(Agent):
         """
         
         # Adjust search depth based on remaining time
-        if remaining_time > 300 :  # Example threshold, adjust as needed
-            self.max_depth = 4 # Longer search for more time
-            #   print("I have change depth to 4 \n")
-        else :
-            self.max_depth = 3
-            # print("I have change depth to 3 \n")
-        # print("remaining_time", remaining_time)
-        return self.alpha_beta_search(state, remaining_time)
+        # if remaining_time > 300 :  # Example threshold, adjust as needed
+        #     self.max_depth = 4 # Longer search for more time
+        #     #   print("I have change depth to 4 \n")
+        # else :
+        #     self.max_depth = 3
+        #     # print("I have change depth to 3 \n")
+        # # print("remaining_time", remaining_time)
+        return self.iterative_deepening(state, remaining_time)
 
     def is_cutoff(self, state, depth):
         """Determines if the search should be cut off at the current depth.
@@ -95,6 +95,9 @@ class AI(Agent):
         # for i in range(4):
         #     min_me = min(min_me, len(state.board[i][me]))
         #     min_opponent = min(min_opponent, len(state.board[i][opponent]))
+
+        # getcontext().prec = 3
+        # print("val returned by eval : \n",Decimal(float(min_me - min_opponent)))
             
         # return float(min_me - min_opponent) 
         #+ my_mobility-opponent_mobility
@@ -109,10 +112,12 @@ class AI(Agent):
         me = self.player # 1 or 0
         opponent = 1 - self.player
         for i in range(4):
-            n_pieces_me += len(state.board[i][self.player])
-            n_pieces_opponent += len(state.board[i][1 - self.player])
+            n_pieces_me += len(state.board[i][me])
+            n_pieces_opponent += len(state.board[i][opponent])
             min_me = min(min_me, len(state.board[i][me]))
             min_opponent = min(min_opponent, len(state.board[i][opponent]))
+            if(len(state.board[i][opponent]) == 0 or len(state.board[i][opponent]) == 1):
+                return 1
 
         # il faut trouver un moyen que la valeur de retour soit bornée entre -1 et 1
         # au chap 23, ils parlent de comment faire du machine learning pour trouver les bons poids
@@ -120,14 +125,20 @@ class AI(Agent):
         # print("n_pieces_opponent \n", n_pieces_opponent)
         # print("min_me \n", min_me)
         # print("min_opponent \n", min_opponent)
-        if (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent) == 0:
-            return 0
-        if(min_me -min_opponent) < 0:
-            return -1
+        # if (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent) == 0:
+        #     return 0
+        # if(n_pieces_me -n_pieces_opponent) < 0:
+        #     # print("I came here in eval : my opponent has more pieces than me \n")
+        #     return -1
+        # if(min_opponent == 0 ):
+        #     # print("I came here in eval :This is a win! \n")
+        #     return 1
         # if (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent) != 0.3125 and (n_pieces_me - n_pieces_opponent) + 10* (min_me - min_opponent) != -0.3125:
         #     print("Ca vaut : \n",(n_pieces_me - n_pieces_opponent)/16 + (min_me - min_opponent)/4)
+        # getcontext().prec = 3
+        # print("val returned by eval : \n",Decimal(0.8*(n_pieces_me - n_pieces_opponent)/16 + 0.2*(min_me - min_opponent)/4))
         
-        return 0.8*(n_pieces_me - n_pieces_opponent)/16 + 0.2*(min_me - min_opponent)/4
+        return 0.5*(n_pieces_me - n_pieces_opponent)/16 + 0.5*(min_me - min_opponent)/4
 
     def alpha_beta_search(self, state, remaining_time):
         """Implements the alpha-beta pruning algorithm to find the best action.
@@ -191,7 +202,12 @@ class AI(Agent):
         best_val = -float("inf")
         move = None
         actions = self.game.actions(state)
-        actions.sort(key=lambda a: self.game.result(state, a), reverse=True)
+        actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
+
+        for i in range (1,len(actions)):
+            print(self.eval(self.game.result(state,i),depth))
+            if (self.eval(self.game.result(state,i-1),depth) < self.eval(self.game.result(state,i),depth)):
+                print("it is not correctly sorted in max\n")
         for a in actions :
             (val_to_compare, _) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
@@ -204,6 +220,8 @@ class AI(Agent):
         self.transposition_table[state_key] = (best_val, move)
         # getcontext().prec = 3
         # print("best_val is :  \n",Decimal(best_val))
+
+        # print(len(self.transposition_table))
 
         return best_val, move
 
@@ -235,9 +253,13 @@ class AI(Agent):
         best_val = float("inf")
         move = None
         actions = self.game.actions(state)
-        actions.sort(key=lambda a: self.game.result(state, a), reverse=True)
+        actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
+        for i in range (1,len(actions)):
+            if (self.eval(self.game.result(state,i-1),depth) >  self.eval(self.game.result(state,i),depth)) :
+                print("it is not correctly sorted in min \n")
         for a in actions: 
             val_to_compare,_ = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
+            # print("val_to_compare is : \n",val_to_compare)
             if (val_to_compare < best_val):
                 best_val = val_to_compare
                 move = a
@@ -246,7 +268,23 @@ class AI(Agent):
             beta = min(beta,best_val)
         self.transposition_table[state_key] = (best_val, move)
         # print(len(self.transposition_table))
+        # print("depth here is : ", depth)
 
         return best_val, move
     
-        
+    def iterative_deepening(self, state, remaining_time):
+        start_time = time.time()
+
+        # Perform iterative deepening until time runs out
+        if time.time() - start_time >= remaining_time:
+            self.max_depth = 4
+        # for depth in range(0, 1000000000000000000000):
+        #     print("depth is : ", depth)
+        #     if remaining_time > 3
+        #     _, action = self.max_value(state, -float("inf"), float("inf"), depth)
+        #     if time.time() - start_time >= remaining_time-1:
+        #         break
+        #     if(self.is_cutoff(state, depth)==False):
+        #         return action
+        # print("i came here \n")
+        # return action
