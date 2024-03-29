@@ -205,12 +205,16 @@ class AI(Agent):
         actions = self.game.actions(state)
         actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
         actions = actions[:(len(actions)//2)]
+        if state.count_boring_actions >= 10 :
+                actions.pop(0)
 
-        for i in range (1,len(actions)):
-            # print(self.eval(self.game.result(state,i),depth))
-            if (self.eval(self.game.result(state,i-1),depth) < self.eval(self.game.result(state,i),depth)):
-                print("it is not correctly sorted in max\n")
+        # for i in range (1,len(actions)):
+        #     # print(self.eval(self.game.result(state,i),depth))
+        #     if (self.eval(self.game.result(state,i-1),depth) < self.eval(self.game.result(state,i),depth)):
+        #         print("it is not correctly sorted in max\n")
+        
         for a in actions :
+            print("nb max - nb de boring actions \n",self.game.max_count_boring_actions - state.count_boring_actions)
             (val_to_compare, _) = self.min_value(self.game.result(state,a), alpha,beta, depth+1)
             if (val_to_compare > best_val):
                 best_val = val_to_compare
@@ -258,10 +262,15 @@ class AI(Agent):
         actions.sort(key=lambda a: self.eval(self.game.result(state,a),depth), reverse=False)
         actions = actions[:len(actions)//2]
 
-        for i in range (1,len(actions)):
-            if (self.eval(self.game.result(state,i-1),depth) >  self.eval(self.game.result(state,i),depth)) :
-                print("it is not correctly sorted in min \n")
+        # for i in range (1,len(actions)):
+        #     if (self.eval(self.game.result(state,i-1),depth) >  self.eval(self.game.result(state,i),depth)) :
+        #         print("it is not correctly sorted in min \n")
+
+        if state.count_boring_actions >= 10 :
+                actions.pop(0)
+        
         for a in actions: 
+            print("nb max - nb de boring actions \n",self.game.max_count_boring_actions - state.count_boring_actions)
             val_to_compare,_ = self.max_value(self.game.result(state,a), alpha,beta, depth+1)
             # print("val_to_compare is : \n",val_to_compare)
             if (val_to_compare < best_val):
