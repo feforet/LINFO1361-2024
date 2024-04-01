@@ -1,3 +1,6 @@
+#Gagne contre le easy agent!
+
+
 from agent import Agent
 import random
 import numpy as np
