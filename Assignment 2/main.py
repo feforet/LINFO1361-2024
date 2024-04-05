@@ -3,6 +3,8 @@ from template_alphabeta import AlphaBetaAgent
 from template_uct import UCTAgent
 from template_contest import AI
 from shobu import ShobuAction, ShobuState, ShobuGame
+from ok_easy import AI_easy
+from ok_medium import AI_medium
 
 from logs import *
 from interface import *
@@ -23,6 +25,10 @@ def get_agents(args, display):
             return UCTAgent(player, ShobuGame(), 1000)
         elif agent_name == "agent":
             return AI(player, ShobuGame())
+        elif agent_name == "easy":
+            return AI_easy(player, ShobuGame())
+        elif agent_name == "medium":
+            return AI_medium(player, ShobuGame())
         else:
             raise Exception(f"Invalid player: {agent_name}")
     

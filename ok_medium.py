@@ -1,12 +1,10 @@
-#Gagne contre le easy agent!
-
 from agent import Agent
 import random
 import numpy as np
 import time
 from decimal import *
 
-class AI_easy(Agent):
+class AI_medium(Agent):
     """An agent that plays following your algorithm.
 
     This agent extends the base Agent class, providing an implementation your agent.
@@ -148,7 +146,7 @@ class AI_easy(Agent):
         return res
     
     def check_time (self, start_time, time_limit):
-        if time.time() - start_time <= 500 - time_limit: 
+        if time.time() - start_time <= 300 - time_limit: 
             return True
         return False
 
@@ -206,12 +204,14 @@ class AI_easy(Agent):
         if self.is_cutoff(state,depth) :
             return self.eval(state, depth), None
 
-        if self.check_time(self.start_time, 450) or state.count_boring_actions >= 10:
+        if self.check_time(self.start_time, 200) or state.count_boring_actions >= 10:
+            self.max_depth = 5
+        elif self.check_time(self.start_time, 100):
             self.max_depth = 4
-        elif self.check_time(self.start_time, 300):
+        elif self.check_time(self.start_time, 25):
             self.max_depth = 3
-        # elif self.check_time(self.start_time, 50):
-        #     self.max_depth = 3
+
+        # print("time passed is : \n",time.time() - self.start_time)
 
 
         state_key = str(state.board) + str(state.to_move)
@@ -223,7 +223,7 @@ class AI_easy(Agent):
         move = None
         actions = self.game.actions(state)
         act = sorted(actions,key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
-        act = act[0:len(act)//2]
+        act = act[0:40]
         # actions = actions[:(len(actions)//2)]
         # if state.count_boring_actions >= 10 :
         #         actions.pop(0)
@@ -272,12 +272,12 @@ class AI_easy(Agent):
         if self.is_cutoff(state,depth) :
             return self.eval(state, depth), None
         
-        if self.check_time(self.start_time, 450) or state.count_boring_actions >= 10:
+        if self.check_time(self.start_time, 400) or state.count_boring_actions >= 10:
+            self.max_depth = 5
+        elif self.check_time(self.start_time, 250):
             self.max_depth = 4
-        elif self.check_time(self.start_time, 300):
+        elif self.check_time(self.start_time, 50):
             self.max_depth = 3
-        # elif self.check_time(self.start_time, 50):
-        #     self.max_depth = 3
         
         # if(self.check_time(self.start_time, 600)):
         #     print("you timeout")
@@ -290,7 +290,7 @@ class AI_easy(Agent):
         move = None
         actions = self.game.actions(state)
         act = sorted(actions,key=lambda a: self.eval(self.game.result(state,a),depth), reverse=True)
-        act = act[0:len(act)//2]
+        act = act[0:40]
         # actions = actions[:len(actions)//2]
 
         # for i in range (1,len(actions)):
