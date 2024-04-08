@@ -137,7 +137,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Shobu game')
     parser.add_argument('-w', '--white', type=str, default="random", help='White player ["random | human | alphabeta | mcts | agent"]')
     parser.add_argument('-b', '--black', type=str, default="random", help='Black player ["random | human | alphabeta | mcts | agent"]')
-    parser.add_argument('-t', '--time', type=int, default=600, help='Time per game for each player (in seconds)')
+    parser.add_argument('-t', '--time', type=int, default=60, help='Time per game for each player (in seconds)')
     parser.add_argument('-d', '--display', action='store_true', help='Display game')
     parser.add_argument('-l', '--logs', type=str, default=None, help='path to log file to record the game')
     parser.add_argument('-dt', '--delay_time', type=float, default=0.0, help='Delay time between moves (in seconds)')
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         total_moves = []
         agent_white, agent_black = get_agents(args, args.display)
         for i in range(0, args.n):
-            if i % 25 == 0 and i > 0:
+            if i > 0:
                 print(f"{i} -> White : {winners[0] / (i+1)}, Black : {winners[1] / (i+1)}, Draw : {winners[-1] / (i+1)}, mean numer of moves : {sum(total_moves) / len(total_moves)}")
             log_file = args.logs
             winner, n_moves = main(agent_white, agent_black, display=args.display, log_file=log_file)
