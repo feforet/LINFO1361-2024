@@ -24,8 +24,9 @@ class NAmazonsProblem(Problem):
 
     def result(self, state, row): #j'ai modif (avant pass)
         col = state.index(-1)
-        state[col] = row
-        return state
+        new_state = list(state[:])
+        new_state[col] = row
+        return tuple(new_state)
 
     def goal_test(self, state): #j'ai modif (avant pass)
         if -1 in state:
@@ -37,9 +38,61 @@ class NAmazonsProblem(Problem):
         return True
     
 
-    def h(self, node): #j'ai modif (avant return 0)
+    def h(self, node): #avant return 0
+        # print("I came here \n")
+        state = node.state
+        # Initialize the heuristic value
+        heuristic_value = 0
+        
+        # Check each column
+        for col in range(self.N):
+            # If there's already an empress in this column, move to the next column
+            if state[col] != -1:
+                continue
+            
+            # Calculate the maximum coverage for placing an empress in this column
+            max_coverage = 0
+            
+            # Check all possible rows in this column
+            for row in range(self.N):
+                # Check if placing an empress in this position is valid
+                valid_placement = True
+                
+                # Check if there's already an empress on the same row
+                if row in state:
+                    valid_placement = False
+                else:
+                    # Check if the empress can attack other empresses diagonally
+                    for prev_col, prev_row in enumerate(state[:col]):
+                        if prev_row != -1 and abs(row - prev_row) == abs(col - prev_col):
+                            valid_placement = False
+                            break
+                            
+                    # Check if the empress can move in 3x2 and 4x1 steps to attack other empresses
+                    for prev_col, prev_row in enumerate(state[:col]):
+                        if prev_row != -1 and ((abs(row - prev_row) == 3 and abs(col - prev_col) == 2) or
+                                            (abs(row - prev_row) == 2 and abs(col - prev_col) == 3) or
+                                            (abs(row - prev_row) == 4 and abs(col - prev_col) == 1) or
+                                            (abs(row - prev_row) == 1 and abs(col - prev_col) == 4)):
+                            valid_placement = False
+                            break
+                
+                # If placing an empress in this position is valid, update the maximum coverage
+                if valid_placement:
+                    coverage = 1  # Start with one cell (the empress itself)
+                    # Count the cells covered by the empress in queen-like movement
+                    for i in range(self.N):
+                        if i != col:
+                            if state[i] == -1 or abs(row - state[i]) == abs(col - i):
+                                coverage += 1
+                    max_coverage = max(max_coverage, coverage)
+                    
+            # Add the maximum coverage for this column to the heuristic value
+            heuristic_value += max_coverage
+        # if(heuristic_value >= 1):
+        #     print("heuristic value is : \n", heuristic_value)  
+        return -heuristic_value
 
-        return node.state.count(-1)   
 
 #####################
 # Launch the search #
@@ -59,10 +112,23 @@ path = node.path()
 
 print('Number of moves: ', str(node.depth))
 
-for n in path:
+# for node in path: 
+#     for value in range(len(node.state)):
+#         if node.state[value] == -1:
+#             print("#")
+#         else:
+#             print("A")
 
-    print(n.state)  # assuming that the _str_ function of state outputs the correct format
+for node in path:
+    state_str = ""
+    for value in node.state:
+        if value == -1:
+            state_str += "#"
+        else:
+            state_str += "A"
+    print(state_str)
+    # print(n.state)  # assuming that the _str_ function of state outputs the correct format
 
-    print()
+    # print()
     
 print("Time: ", end_timer - start_timer)
