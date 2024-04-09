@@ -12,22 +12,34 @@ class NAmazonsProblem(Problem):
     row r, and a value of -1 means that the c-th column has not been
     filled in yet. We fill in columns left to right.
     """
-    def __init__(self, N):
-        pass
+    def __init__(self, N): #j'ai modif (avant pass)
+        self.N = N
+        self.initial = [-1] * N
 
-    def actions(self, state):
-        pass
+    def actions(self, state): #j'ai modif (avant pass)
+        if state[-1] != -1:
+            return []
+        else:
+            return range(self.N)
 
-    def result(self, state, row):
-        pass
+    def result(self, state, row): #j'ai modif (avant pass)
+        col = state.index(-1)
+        state[col] = row
+        return state
 
-    def goal_test(self, state):
-        pass
+    def goal_test(self, state): #j'ai modif (avant pass)
+        if -1 in state:
+            return False
+        for i in range (self.N):
+            for j in range(i+1, self.N):
+                if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
+                    return False
+        return True
+    
 
-    def h(self, node):
-        h = 0.0
+    def h(self, node): #j'ai modif (avant return 0)
 
-        return h    
+        return node.state.count(-1)   
 
 #####################
 # Launch the search #
@@ -37,7 +49,7 @@ problem = NAmazonsProblem(int(sys.argv[1]))
 
 start_timer = time.perf_counter()
 
-node = ... # TODO: Launch the search
+node = astar_search(problem) #j'ai modif (avant TODO)
 
 end_timer = time.perf_counter()
 
