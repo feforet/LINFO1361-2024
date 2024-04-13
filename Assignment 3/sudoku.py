@@ -3,18 +3,36 @@ import time
 import math
 import sys
 
- 
 
 def objective_score(board):
-    pass #TODO: Implement the objective function to calculate the score of the board
+    count_zero = 0
+    conflicts = {}
+    for i in range(9):
+        for j in range(9):
+            if (board[i][j] == 0):  # NotFilled
+                count_zero += 1
+            else:
+                for k in range(9):
+                    if (board[i][j] == board[k][j]) and (i != k):  # SameColumn
+                        conflicts[(i,j,k,j)] = True
+                    if (board[i][j] == board[i][k]) and (j != k):  # SameRow
+                        conflicts[(i,j,i,k)] = True
+                xTopLeft = i - (i % 3)
+                yTopLeft = j - (j % 3)
+                for k in range(xTopLeft, xTopLeft+3):
+                    for l in range(yTopLeft, yTopLeft+3):
+                        if (board[i][j] == board[k][l]) and (i!=k or j!=l):  # SameSubGrid
+                            conflicts[(i,j,k,l)] = True
 
- 
+    return count_zero + (len(conflicts) / 2)
 
- 
 
 def simulated_annealing_solver(initial_board):
 
     """Simulated annealing Sudoku solver."""
+    def is_initial(tup):
+        i, j = tup
+        return initial_board[i][j] != 0
 
     current_solution = [row[:] for row in initial_board]
     best_solution = current_solution
@@ -23,16 +41,33 @@ def simulated_annealing_solver(initial_board):
     best_score = current_score
 
     temperature = 1.0
-    cooling_rate = ...  #TODO: Adjust this parameter to control the cooling rate
+    cooling_rate = 1.0 - 1e-5  #TODO: Adjust this parameter to control the cooling rate
 
     while temperature > 0.0001:
 
         try:  
 
             # TODO: Generate a neighbor (Don't forget to skip non-zeros tiles in the initial board ! It will be verified on Inginious.)
-            ...
-            neighbor = ...
-           
+            neighbor = [row[:] for row in current_solution]
+            zero = (random.random() >= 0.5)
+            other = True
+            i = 0
+            # Une chance sur 2 qu'on complète une case vide, une chance sur 2 qu'on modifie une case
+            while (not zero) and (i < 9):
+                for j in range(9):
+                    if (neighbor[i][j] == 0):
+                        neighbor[i][j] = random.randint(1, 9)
+                        zero = True
+                        other = False
+                        break
+                i += 1
+            if (other):
+                to_modify = (random.randint(0, 8), random.randint(0, 8))
+                while (is_initial(to_modify)):
+                    to_modify = (random.randint(0, 8), random.randint(0, 8))
+                i, j = to_modify
+                neighbor[i][j] = random.randint(1,9)
+            # END TODO
 
             # Evaluate the neighbor
             neighbor_score = objective_score(neighbor)
@@ -57,20 +92,18 @@ def simulated_annealing_solver(initial_board):
             # Cool down the temperature
             temperature *= cooling_rate
         except:
-
             print("Break asked")
             break
         
     return best_solution, best_score
 
- 
+
 def print_board(board):
 
     """Print the Sudoku board."""
 
     for row in board:
         print("".join(map(str, row)))
-
  
 
 def read_sudoku_from_file(file_path):
