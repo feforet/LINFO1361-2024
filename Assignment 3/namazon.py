@@ -35,64 +35,86 @@ class NAmazonsProblem(Problem):
             for j in range(i+1, self.N):
                 if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
                     return False
+                # vérifier si les empresses peuvent se déplacer en 3x2 et 4x1
+                if (abs(state[i] - state[j]) == 3 and abs(i - j) == 2) or (abs(state[i] - state[j]) == 2 and abs(i - j) == 3) or (abs(state[i] - state[j]) == 4 and abs(i - j) == 1) or (abs(state[i] - state[j]) == 1 and abs(i - j) == 4):
+                    return False
         return True
     
+    def h(self, node):
+        return heuristic_1(self, node)  # comme ca on peut facilement changer d'heuristique
 
-    def h(self, node): #avant return 0
-        # print("I came here \n")
-        state = node.state
-        # Initialize the heuristic value
-        heuristic_value = 0
-        
-        # Check each column
-        for col in range(self.N):
-            # If there's already an empress in this column, move to the next column
-            if state[col] != -1:
-                continue
-            
-            # Calculate the maximum coverage for placing an empress in this column
-            max_coverage = 0
-            
-            # Check all possible rows in this column
-            for row in range(self.N):
-                # Check if placing an empress in this position is valid
-                valid_placement = True
-                
-                # Check if there's already an empress on the same row
-                if row in state:
-                    valid_placement = False
-                else:
-                    # Check if the empress can attack other empresses diagonally
-                    for prev_col, prev_row in enumerate(state[:col]):
-                        if prev_row != -1 and abs(row - prev_row) == abs(col - prev_col):
-                            valid_placement = False
-                            break
-                            
-                    # Check if the empress can move in 3x2 and 4x1 steps to attack other empresses
-                    for prev_col, prev_row in enumerate(state[:col]):
-                        if prev_row != -1 and ((abs(row - prev_row) == 3 and abs(col - prev_col) == 2) or
-                                            (abs(row - prev_row) == 2 and abs(col - prev_col) == 3) or
-                                            (abs(row - prev_row) == 4 and abs(col - prev_col) == 1) or
-                                            (abs(row - prev_row) == 1 and abs(col - prev_col) == 4)):
-                            valid_placement = False
-                            break
-                
-                # If placing an empress in this position is valid, update the maximum coverage
-                if valid_placement:
-                    coverage = 1  # Start with one cell (the empress itself)
-                    # Count the cells covered by the empress in queen-like movement
-                    for i in range(self.N):
-                        if i != col:
-                            if state[i] == -1 or abs(row - state[i]) == abs(col - i):
-                                coverage += 1
-                    max_coverage = max(max_coverage, coverage)
-                    
-            # Add the maximum coverage for this column to the heuristic value
-            heuristic_value += max_coverage
-        # if(heuristic_value >= 1):
-        #     print("heuristic value is : \n", heuristic_value)  
-        return -heuristic_value
 
+def heuristic_1(self, node): #avant return 0
+    # print("I came here \n")
+    state = node.state
+    # Initialize the heuristic value
+    heuristic_value = 0
+
+    # Check each column
+    for col in range(self.N):
+        # If there's already an empress in this column, move to the next column
+        if state[col] != -1:
+            continue
+
+        # Calculate the maximum coverage for placing an empress in this column
+        max_coverage = 0
+
+        # Check all possible rows in this column
+        for row in range(self.N):
+            # Check if placing an empress in this position is valid
+            valid_placement = True
+
+            # Check if there's already an empress on the same row
+            if row in state:
+                valid_placement = False
+            else:
+                # Check if the empress can attack other empresses diagonally
+                for prev_col, prev_row in enumerate(state[:col]):
+                    if prev_row != -1 and abs(row - prev_row) == abs(col - prev_col):
+                        valid_placement = False
+                        break
+
+                # Check if the empress can move in 3x2 and 4x1 steps to attack other empresses
+                for prev_col, prev_row in enumerate(state[:col]):
+                    if prev_row != -1 and ((abs(row - prev_row) == 3 and abs(col - prev_col) == 2) or
+                                        (abs(row - prev_row) == 2 and abs(col - prev_col) == 3) or
+                                        (abs(row - prev_row) == 4 and abs(col - prev_col) == 1) or
+                                        (abs(row - prev_row) == 1 and abs(col - prev_col) == 4)):
+                        valid_placement = False
+                        break
+
+            # If placing an empress in this position is valid, update the maximum coverage
+            if valid_placement:
+                coverage = 1  # Start with one cell (the empress itself)
+                # Count the cells covered by the empress in queen-like movement
+                for i in range(self.N):
+                    if i != col:
+                        if state[i] == -1 or abs(row - state[i]) == abs(col - i):
+                            coverage += 1
+                max_coverage = max(max_coverage, coverage)
+
+        # Add the maximum coverage for this column to the heuristic value
+        heuristic_value += max_coverage
+    # if(heuristic_value >= 1):
+    #     print("heuristic value is : \n", heuristic_value)  
+    return -heuristic_value
+
+
+def successive_boards(node):
+    result = ""
+    path = node.path()
+    for node in path:
+        state_str = ""
+        for value in node.state:
+            if value == -1:
+                state_str += len(node.state) * "#"
+            else:
+                state_str += value * "#"
+                state_str += "A"
+                state_str += (len(node.state) - value - 1) * "#"
+            state_str += "\n"
+        result += state_str + "\n\n"
+    return result
 
 #####################
 # Launch the search #
@@ -103,6 +125,8 @@ problem = NAmazonsProblem(int(sys.argv[1]))
 start_timer = time.perf_counter()
 
 node = astar_search(problem) #j'ai modif (avant TODO)
+#node = breadth_first_graph_search(problem)
+#node = depth_first_graph_search(problem)
 
 end_timer = time.perf_counter()
 
@@ -112,6 +136,8 @@ path = node.path()
 
 print('Number of moves: ', str(node.depth))
 
+print(successive_boards(node))
+
 # for node in path: 
 #     for value in range(len(node.state)):
 #         if node.state[value] == -1:
@@ -119,15 +145,15 @@ print('Number of moves: ', str(node.depth))
 #         else:
 #             print("A")
 
-for node in path:
-    state_str = ""
-    for value in node.state:
-        if value == -1:
-            state_str += "#"
-        else:
-            state_str += "A"
-    print(state_str)
-    # print(n.state)  # assuming that the _str_ function of state outputs the correct format
+# for node in path:
+#     state_str = ""
+#     for value in node.state:
+#         if value == -1:
+#             state_str += "#"
+#         else:
+#             state_str += "A"
+#     print(state_str)
+    # print(node.state)  # assuming that the _str_ function of state outputs the correct format
 
     # print()
     
