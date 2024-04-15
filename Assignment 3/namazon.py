@@ -17,10 +17,15 @@ class NAmazonsProblem(Problem):
         self.initial = [-1] * N
 
     def actions(self, state): #j'ai modif (avant pass)
-        if state[-1] != -1:
-            return []
-        else:
-            return range(self.N)
+        # if state[-1] != -1:
+        #     return []
+        # else:
+        #     return range(self.N)
+        for i in range(len(state)):
+            if state[i] == -1:
+                for j in range(self.N):
+                    if not self.is_attacked(state, j, i):
+                        yield (j, i)
 
     def result(self, state, row): #j'ai modif (avant pass)
         col = state.index(-1)
@@ -41,63 +46,28 @@ class NAmazonsProblem(Problem):
         return True
     
     def h(self, node):
-        return heuristic_1(self, node)  # comme ca on peut facilement changer d'heuristique
+        return self.heuristic_1(node)  # comme ca on peut facilement changer d'heuristique
 
 
-def heuristic_1(self, node): #avant return 0
-    # print("I came here \n")
-    state = node.state
-    # Initialize the heuristic value
-    heuristic_value = 0
+    def heuristic_1(self, node): #avant return 0
+        conflicts = 0
+        for col, row in enumerate(node.state):
+            print(type(col), type(row))
+            if self.is_attacked(node.state, row, col):
+                conflicts += 1
+        return conflicts
 
-    # Check each column
-    for col in range(self.N):
-        # If there's already an empress in this column, move to the next column
-        if state[col] != -1:
-            continue
-
-        # Calculate the maximum coverage for placing an empress in this column
-        max_coverage = 0
-
-        # Check all possible rows in this column
-        for row in range(self.N):
-            # Check if placing an empress in this position is valid
-            valid_placement = True
-
-            # Check if there's already an empress on the same row
-            if row in state:
-                valid_placement = False
-            else:
-                # Check if the empress can attack other empresses diagonally
-                for prev_col, prev_row in enumerate(state[:col]):
-                    if prev_row != -1 and abs(row - prev_row) == abs(col - prev_col):
-                        valid_placement = False
-                        break
-
-                # Check if the empress can move in 3x2 and 4x1 steps to attack other empresses
-                for prev_col, prev_row in enumerate(state[:col]):
-                    if prev_row != -1 and ((abs(row - prev_row) == 3 and abs(col - prev_col) == 2) or
-                                        (abs(row - prev_row) == 2 and abs(col - prev_col) == 3) or
-                                        (abs(row - prev_row) == 4 and abs(col - prev_col) == 1) or
-                                        (abs(row - prev_row) == 1 and abs(col - prev_col) == 4)):
-                        valid_placement = False
-                        break
-
-            # If placing an empress in this position is valid, update the maximum coverage
-            if valid_placement:
-                coverage = 1  # Start with one cell (the empress itself)
-                # Count the cells covered by the empress in queen-like movement
-                for i in range(self.N):
-                    if i != col:
-                        if state[i] == -1 or abs(row - state[i]) == abs(col - i):
-                            coverage += 1
-                max_coverage = max(max_coverage, coverage)
-
-        # Add the maximum coverage for this column to the heuristic value
-        heuristic_value += max_coverage
-    # if(heuristic_value >= 1):
-    #     print("heuristic value is : \n", heuristic_value)  
-    return -heuristic_value
+    def is_attacked(self, state, row, col):
+            for i in range(len(state)):
+                if state[i] != -1:
+                    row_of_tuple, *_ = state[i]
+                    if row_of_tuple == row or abs(row_of_tuple - row) == abs(i - col):
+                        return True
+                    elif abs(row_of_tuple - row) == 3 and abs(i - col) == 2:
+                        return True
+                    elif abs(row_of_tuple - row) == 4 and abs(i - col) == 1:
+                        return True
+            return False
 
 
 def successive_boards(node):
