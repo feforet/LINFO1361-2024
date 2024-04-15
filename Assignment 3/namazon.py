@@ -14,7 +14,8 @@ class NAmazonsProblem(Problem):
     """
     def __init__(self, N): #j'ai modif (avant pass)
         self.N = N
-        self.initial = [-1] * N
+        self.initial = tuple([-1] * N) #pour que ce soit hashable
+        # self.state = tuple(self.initial)
 
     def actions(self, state): #j'ai modif (avant pass)
         # if state[-1] != -1:
@@ -52,6 +53,7 @@ class NAmazonsProblem(Problem):
     def heuristic_1(self, node): #avant return 0
         conflicts = 0
         for col, row in enumerate(node.state):
+            print("state[i] =",node.state[col])
             print(type(col), type(row))
             if self.is_attacked(node.state, row, col):
                 conflicts += 1
@@ -60,6 +62,7 @@ class NAmazonsProblem(Problem):
     def is_attacked(self, state, row, col):
             for i in range(len(state)):
                 if state[i] != -1:
+                    print("state[i] =",state[i])
                     row_of_tuple, *_ = state[i]
                     if row_of_tuple == row or abs(row_of_tuple - row) == abs(i - col):
                         return True
@@ -95,7 +98,7 @@ problem = NAmazonsProblem(int(sys.argv[1]))
 start_timer = time.perf_counter()
 
 node = astar_search(problem) #j'ai modif (avant TODO)
-#node = breadth_first_graph_search(problem)
+# node = breadth_first_graph_search(problem)
 #node = depth_first_graph_search(problem)
 
 end_timer = time.perf_counter()
