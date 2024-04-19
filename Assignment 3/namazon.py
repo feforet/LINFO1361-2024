@@ -18,15 +18,14 @@ class NAmazonsProblem(Problem):
         # self.state = tuple(self.initial)
 
     def actions(self, state): #j'ai modif (avant pass)
-        # if state[-1] != -1:
-        #     return []
-        # else:
-        #     return range(self.N)
-        for i in range(len(state)):
-            if state[i] == -1:
-                for j in range(self.N):
-                    if not self.is_attacked(state, j, i):
-                        yield (j, i)
+        possible_actions = []
+        if state[-1] != -1:
+            return possible_actions
+        col = state.index(-1)
+        for row in range(self.N):
+            if not self.is_attacked(state, row, col):
+                possible_actions.append(row)
+        return possible_actions
 
     def result(self, state, row): #j'ai modif (avant pass)
         col = state.index(-1)
@@ -37,13 +36,16 @@ class NAmazonsProblem(Problem):
     def goal_test(self, state): #j'ai modif (avant pass)
         if -1 in state:
             return False
-        for i in range (self.N):
-            for j in range(i+1, self.N):
-                if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
-                    return False
-                # vérifier si les empresses peuvent se déplacer en 3x2 et 4x1
-                if (abs(state[i] - state[j]) == 3 and abs(i - j) == 2) or (abs(state[i] - state[j]) == 2 and abs(i - j) == 3) or (abs(state[i] - state[j]) == 4 and abs(i - j) == 1) or (abs(state[i] - state[j]) == 1 and abs(i - j) == 4):
-                    return False
+        for col in range (self.N):
+            row = state[col]
+            if (self.is_attacked(state, row, col)):
+                return False
+            # for j in range(i+1, self.N):
+            #     if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
+            #         return False
+            #     # vérifier si les empresses peuvent se déplacer en 3x2 et 4x1
+            #     if (abs(state[i] - state[j]) == 3 and abs(i - j) == 2) or (abs(state[i] - state[j]) == 2 and abs(i - j) == 3) or (abs(state[i] - state[j]) == 4 and abs(i - j) == 1) or (abs(state[i] - state[j]) == 1 and abs(i - j) == 4):
+            #         return False
         return True
     
     def h(self, node):
@@ -52,41 +54,50 @@ class NAmazonsProblem(Problem):
 
     def heuristic_1(self, node): #avant return 0
         conflicts = 0
-        for col, row in enumerate(node.state):
-            print("state[i] =",node.state[col])
-            print(type(col), type(row))
+        for col in node.state:
+            row = node.state[col]
             if self.is_attacked(node.state, row, col):
                 conflicts += 1
         return conflicts
 
     def is_attacked(self, state, row, col):
-            for i in range(len(state)):
-                if state[i] != -1:
-                    print("state[i] =",state[i])
-                    row_of_tuple, *_ = state[i]
-                    if row_of_tuple == row or abs(row_of_tuple - row) == abs(i - col):
-                        return True
-                    elif abs(row_of_tuple - row) == 3 and abs(i - col) == 2:
-                        return True
-                    elif abs(row_of_tuple - row) == 4 and abs(i - col) == 1:
-                        return True
+            N = len(state)
+            for col_to_check in range(N):
+                if state[col_to_check] == -1:
+                    break
+                if (col_to_check == col):
+                    continue
+                row_to_check = state[col_to_check]
+                if row_to_check == row or abs(row_to_check - row) == abs(col_to_check - col):
+                    return True
+                if abs(row_to_check - row) == 1 and abs(col_to_check - col) == 4:
+                    return True
+                if abs(row_to_check - row) == 2 and abs(col_to_check - col) == 3:
+                    return True
+                if abs(row_to_check - row) == 3 and abs(col_to_check - col) == 2:
+                    return True
+                if abs(row_to_check - row) == 4 and abs(col_to_check - col) == 1:
+                    return True
             return False
 
 
 def successive_boards(node):
+    N = len(node.state)
     result = ""
     path = node.path()
     for node in path:
+        state = [["#" for _ in range(N)] for _ in range(N)]
+        for col in range(N):
+            row = node.state[col]
+            if (row != -1):
+                state[row][col] = "A"
         state_str = ""
-        for value in node.state:
-            if value == -1:
-                state_str += len(node.state) * "#"
-            else:
-                state_str += value * "#"
-                state_str += "A"
-                state_str += (len(node.state) - value - 1) * "#"
+        for row in range(N):
+            for col in range(N):
+                state_str += state[row][col]
             state_str += "\n"
-        result += state_str + "\n\n"
+        result += state_str + "\n"
+    result = result.strip()
     return result
 
 #####################
@@ -110,24 +121,3 @@ path = node.path()
 print('Number of moves: ', str(node.depth))
 
 print(successive_boards(node))
-
-# for node in path: 
-#     for value in range(len(node.state)):
-#         if node.state[value] == -1:
-#             print("#")
-#         else:
-#             print("A")
-
-# for node in path:
-#     state_str = ""
-#     for value in node.state:
-#         if value == -1:
-#             state_str += "#"
-#         else:
-#             state_str += "A"
-#     print(state_str)
-    # print(node.state)  # assuming that the _str_ function of state outputs the correct format
-
-    # print()
-    
-print("Time: ", end_timer - start_timer)
