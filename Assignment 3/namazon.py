@@ -55,27 +55,24 @@ class NAmazonsProblem(Problem):
         return conflicts
     
     def heuristic_2(self, node):
-        return node.state.count(-1)
+        return (100 * node.state.count(-1))# - len(self.actions(node.state))
 
     def is_attacked(self, state, row, col):
-            N = len(state)
-            for col_to_check in range(N):
-                if state[col_to_check] == -1:
-                    break
-                if (col_to_check == col):
-                    continue
-                row_to_check = state[col_to_check]
-                if row_to_check == row or abs(row_to_check - row) == abs(col_to_check - col):
-                    return True
-                if abs(row_to_check - row) == 1 and abs(col_to_check - col) == 4:
-                    return True
-                if abs(row_to_check - row) == 2 and abs(col_to_check - col) == 3:
-                    return True
-                if abs(row_to_check - row) == 3 and abs(col_to_check - col) == 2:
-                    return True
-                if abs(row_to_check - row) == 4 and abs(col_to_check - col) == 1:
-                    return True
-            return False
+        for col_to_check in range(col):
+            if state[col_to_check] == -1:
+                break
+            row_to_check = state[col_to_check]
+            if row_to_check == row or abs(row_to_check - row) == abs(col_to_check - col):
+                return True
+            if abs(row_to_check - row) == 1 and abs(col_to_check - col) == 4:
+                return True
+            if abs(row_to_check - row) == 2 and abs(col_to_check - col) == 3:
+                return True
+            if abs(row_to_check - row) == 3 and abs(col_to_check - col) == 2:
+                return True
+            if abs(row_to_check - row) == 4 and abs(col_to_check - col) == 1:
+                return True
+        return False
 
 
 def successive_boards(node):
@@ -117,4 +114,4 @@ path = node.path()
 
 print('Number of moves: ', str(node.depth))
 
-print(successive_boards(node))
+#print(successive_boards(node))
