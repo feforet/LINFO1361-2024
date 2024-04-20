@@ -19,7 +19,7 @@ class NAmazonsProblem(Problem):
 
     def actions(self, state): #j'ai modif (avant pass)
         possible_actions = []
-        if state[-1] != -1:
+        if (state[-1] != -1):
             return possible_actions
         col = state.index(-1)
         for row in range(self.N):
@@ -40,16 +40,10 @@ class NAmazonsProblem(Problem):
             row = state[col]
             if (self.is_attacked(state, row, col)):
                 return False
-            # for j in range(i+1, self.N):
-            #     if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
-            #         return False
-            #     # vérifier si les empresses peuvent se déplacer en 3x2 et 4x1
-            #     if (abs(state[i] - state[j]) == 3 and abs(i - j) == 2) or (abs(state[i] - state[j]) == 2 and abs(i - j) == 3) or (abs(state[i] - state[j]) == 4 and abs(i - j) == 1) or (abs(state[i] - state[j]) == 1 and abs(i - j) == 4):
-            #         return False
         return True
     
     def h(self, node):
-        return self.heuristic_1(node)  # comme ca on peut facilement changer d'heuristique
+        return self.heuristic_2(node)  # comme ca on peut facilement changer d'heuristique
 
 
     def heuristic_1(self, node): #avant return 0
@@ -59,6 +53,9 @@ class NAmazonsProblem(Problem):
             if self.is_attacked(node.state, row, col):
                 conflicts += 1
         return conflicts
+    
+    def heuristic_2(self, node):
+        return node.state.count(-1)
 
     def is_attacked(self, state, row, col):
             N = len(state)
