@@ -102,16 +102,18 @@ problem = NAmazonsProblem(int(sys.argv[1]))
 
 start_timer = time.perf_counter()
 
-node = astar_search(problem) #j'ai modif (avant TODO)
-# node = breadth_first_graph_search(problem)
-#node = depth_first_graph_search(problem)
+# node = astar_search(problem) #j'ai modif (avant TODO)
+node = breadth_first_graph_search(problem)
+# node = depth_first_graph_search(problem)
 
 end_timer = time.perf_counter()
 
 
 # example of print
-path = node.path()
+#path = node.path()
 
-print('Number of moves: ', str(node.depth))
+#print('Number of moves: ', str(node.depth))
 
 #print(successive_boards(node))
+
+print(end_timer - start_timer, "seconds")

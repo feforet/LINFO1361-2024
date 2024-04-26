@@ -228,6 +228,7 @@ def depth_first_graph_search(problem):
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
+            print(len(explored), "paths have been expanded")
             return node
         explored.add(node.state)
         frontier.extend(child for child in node.expand(problem)
@@ -252,6 +253,7 @@ def breadth_first_graph_search(problem):
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
                 if problem.goal_test(child.state):
+                    print(len(explored), "paths have been expanded")
                     return child
                 frontier.append(child)
     return None
