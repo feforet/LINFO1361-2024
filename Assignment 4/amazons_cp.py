@@ -172,17 +172,17 @@ def amazons_cp(size: int, placed_amazons: list[(int, int)]) -> (bool, list[list[
     """
 
     # Create the variables here
-    x = VarArray(size=size,dom={0,size-1}) # x[i] is the row of the amazon in column i
+    x = VarArray(size=size,dom=range(0,size)) # x[i] is the column of the amazon in row i
 
     satisfy(
         # Write your constraints here
-        [AllDifferent(x[i]) for i in range(size)],
-        [abs(x[i] -x [j]) != abs(i-j) for i in range(size) for j in range(size) if i != j],
-        [abs(x[i] -x [j]) != 1 & abs(i-j) != 4 for i in range(size) for j in range(size) if i != j],
-        [abs(x[i] - x[j]) != 2 & abs(i-j) != 3 for i in range(size) for j in range(size) if i != j],
-        [abs(x[i] - x[j]) != 3 & abs(i-j) != 2 for i in range(size) for j in range(size) if i != j],
-        [abs(x[i] - x[j]) != 4 & abs(i-j) != 1 for i in range(size) for j in range(size) if i != j]
-
+        [AllDifferent(x)],
+        [abs(x[i] - x[j]) != abs(i-j) for i in range(size) for j in range(size) if i != j],
+        [abs(x[i] - x[j]) != 1 for i in range(size) for j in range(size) if i != j and abs(i-j) == 4],
+        [abs(x[i] - x[j]) != 2 for i in range(size) for j in range(size) if i != j and abs(i-j) == 3],
+        [abs(x[i] - x[j]) != 3 for i in range(size) for j in range(size) if i != j and abs(i-j) == 2],
+        [abs(x[i] - x[j]) != 4 for i in range(size) for j in range(size) if i != j and abs(i-j) == 1],
+        [x[amazon[0]] == amazon[1] for amazon in placed_amazons]
     )
 
     # output[i][j] == 1 iff there is an amazon at row i and column j
@@ -193,8 +193,12 @@ def amazons_cp(size: int, placed_amazons: list[(int, int)]) -> (bool, list[list[
     if solve(solver=CHOCO) is SAT:
         status = True
         # Fill the output grid with solution
+        sol = values(x)
+        for i in range(size):
+            output[i][sol[i]] = 1
     else:
         status = False
+        output = None
 
     # Do not remove this line ! Otherwise, errors will occur during 
     # the evaluation runned by Inginious
