@@ -50,15 +50,12 @@ class Clause:
         :param index: the 1D index of the variable
         :return: a string of the complete variable name
         """
-        if index >= 0:
-            index -= 1
-        else:
-            index += 1
-        row_ind, column_ind = divmod(abs(index), self.n_columns)
-
+        row_ind, column_ind = divmod(abs(index)-1, self.n_columns)
+ 
+        var = '{0}_{1}_{2}'.format(self.varname, row_ind, column_ind)
         if index < 0:
-            return '~{0}_{1}_{2}'.format(self.varname, row_ind, column_ind)
-        return '{0}_{1}_{2}'.format(self.varname, row_ind, column_ind)
+            return '~' + var
+        return var
 
     def add_positive(self, row_ind: int, column_ind: int):
         """
