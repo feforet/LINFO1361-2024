@@ -75,5 +75,32 @@ def get_expression(size: int, placed_amazons: list[(int, int)]) -> list[Clause]:
         clause = Clause(size)
         clause.add_positive(i, j)
         expression.append(clause)
+    # 6 and 7
+    for i in range(size):
+        for j in range(size):
+            for a in range(1, size):
+                if (i + a < size) and (j + a < size):
+                    clause = Clause(size)
+                    clause.add_negative(i, j)
+                    clause.add_negative(i + a, j + a)
+                    expression.append(clause)
+                if (i + a < size) and (0 <= j - a):
+                    clause = Clause(size)
+                    clause.add_negative(i, j)
+                    clause.add_negative(i + a, j - a)
+                    expression.append(clause)
+    # 8
+    for i in range(size):
+        for j in range(size):
+            pairs = [(1,4), (2,3), (3,2), (4,1),
+                     (1,-4), (2,-3), (3,-2), (4,-1),
+                     (-1,4), (-2,3), (-3,2), (-4,1),
+                     (-1,-4), (-2,-3), (-3,-2), (-4,-1)]
+            for a, b in pairs:
+                if (0 <= i + a < size) and (0 <= j + b < size):
+                    clause = Clause(size)
+                    clause.add_negative(i, j)
+                    clause.add_negative(i + a, j + b)
+                    expression.append(clause)
 
     return expression
